@@ -1,0 +1,2541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>VERBSPACE</title>
+<style>
+:root {
+  --space-bg:    #0a0d2e;
+  --space-mid:   #101540;
+  --space-panel: #141a4a;
+  --space-border:#2a3278;
+  --cyan:   #00cfff;
+  --yellow: #ffe600;
+  --pink:   #ff50c8;
+  --red:    #ff3322;
+  --white:  #e8f0ff;
+  --dim:    #5566aa;
+  --text:   #ccd6ff;
+}
+* { margin:0; padding:0; box-sizing:border-box; touch-action:none; -webkit-tap-highlight-color:transparent; }
+body {
+  background: var(--space-bg);
+  color: var(--white);
+  font-family: 'Courier New', monospace;
+  overflow: hidden;
+  width: 100vw; height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+}
+canvas { display: block; image-rendering: pixelated; }
+
+.screen {
+  display: none; position: fixed; inset: 0;
+  flex-direction: column; align-items: center;
+  background: var(--space-bg); z-index: 10;
+}
+.screen.active { display: flex; }
+#titleScreen, #gameScreen, #gameOverScreen { justify-content: center; }
+
+/* ── TITLE ── */
+#titleCanvas { position: absolute; inset: 0; display: block; }
+.title-content {
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.title-word {
+  font-size: clamp(36px, 10vw, 60px);
+  font-weight: 900; letter-spacing: 8px; color: var(--cyan);
+  text-shadow: 0 0 20px rgba(0,207,255,0.5), 0 0 40px rgba(0,207,255,0.2);
+}
+.title-sub {
+  font-size: clamp(9px, 2.5vw, 12px);
+  letter-spacing: 5px; color: var(--dim); margin-bottom: 36px;
+  font-style: italic;
+}
+
+/* ── BUTTONS ── */
+.pxbtn {
+  background: var(--cyan); color: var(--space-bg); border: none;
+  font-family: 'Courier New', monospace;
+  font-size: clamp(12px, 3.5vw, 15px);
+  font-weight: 900;
+  letter-spacing: 3px; padding: 14px 32px; cursor: pointer;
+  box-shadow: 4px 4px 0 rgba(0,207,255,0.3);
+}
+.pxbtn:active { transform: translate(3px,3px); box-shadow: 1px 1px 0 rgba(0,207,255,0.2); }
+.pxbtn.outline {
+  background: transparent; color: var(--dim);
+  border: 2px solid var(--space-border);
+  box-shadow: 4px 4px 0 rgba(42,50,120,0.5);
+}
+.pxbtn.outline:active { transform: translate(3px,3px); box-shadow: 1px 1px 0 rgba(42,50,120,0.3); }
+.mode-btn.active-mode {
+  background: var(--cyan); color: var(--space-bg);
+  border: 2px solid var(--cyan); box-shadow: 2px 2px 0 rgba(0,207,255,0.4);
+  font-weight: 900;
+}
+
+/* ── LESSON ── */
+#lessonScreen { padding: 0; gap: 0; overflow: hidden; justify-content: flex-start; background: var(--space-bg); }
+.ls-title {
+  font-size: clamp(11px, 3vw, 15px); font-weight: 900;
+  letter-spacing: 2px; color: var(--cyan);
+  border-bottom: 2px solid var(--space-border);
+  padding-bottom: 6px; width: 100%; max-width: 500px; text-align: center;
+}
+.ls-rule {
+  font-size: clamp(9px, 2.2vw, 11px); line-height: 1.8;
+  max-width: 500px; text-align: center; color: var(--text);
+}
+.ls-table { width: 100%; max-width: 500px; border-collapse: collapse; }
+.ls-table td, .ls-table th {
+  border: 1px solid var(--space-border); padding: 4px 6px;
+  font-family: 'Courier New', monospace;
+  font-size: clamp(8px, 2vw, 10px); text-align: center;
+  color: var(--text);
+  background: var(--space-panel);
+}
+.ls-table th {
+  background: var(--space-border); color: var(--cyan);
+  font-weight: 700; letter-spacing: 1px;
+}
+
+/* ── GAME ── */
+#gameScreen { background: #0a0d2e; align-items: center; justify-content: center; }
+
+/* ── QUESTION OVERLAY ── */
+#questionOverlay {
+  position: fixed; inset: 0; background: var(--space-bg); z-index: 50;
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center; padding: 20px; gap: 12px;
+}
+#questionOverlay.active { display: flex; }
+.qlabel { font-size: 9px; letter-spacing: 4px; color: var(--dim); text-transform: uppercase; }
+.qlives { display: flex; gap: 10px; }
+.qlife { font-size: 18px; color: var(--cyan); }
+.qlife.lost { color: var(--space-border); }
+.qcard {
+  border: 2px solid var(--space-border); padding: 22px;
+  width: 100%; max-width: 460px;
+  background: var(--space-panel);
+  box-shadow: 0 0 20px rgba(0,207,255,0.08);
+}
+.qtype { font-size: 8px; letter-spacing: 3px; color: var(--dim); text-transform: uppercase; margin-bottom: 8px; }
+.qtext { font-size: clamp(13px, 3.8vw, 18px); font-weight: 700; line-height: 1.4; margin-bottom: 14px; color: var(--white); }
+.qverb {
+  font-size: clamp(15px, 4.5vw, 24px); font-weight: 900;
+  text-align: center; border: 1px solid var(--space-border); padding: 10px;
+  margin-bottom: 14px; letter-spacing: 1px;
+  color: var(--yellow); background: var(--space-mid);
+}
+.choices { display: flex; flex-direction: column; gap: 7px; }
+.cbtn {
+  background: var(--space-mid); border: 1px solid var(--space-border); color: var(--text);
+  font-family: 'Courier New', monospace;
+  font-size: clamp(11px, 3.2vw, 14px);
+  padding: 12px 14px; text-align: left; cursor: pointer;
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.4);
+}
+.cbtn:active:not(:disabled) { transform: translate(1px,1px); box-shadow: none; }
+.cbtn.correct { background: var(--cyan); color: var(--space-bg); border-color: var(--cyan); font-weight: 900; box-shadow: none; }
+.cbtn.wrong { background: var(--space-bg); color: var(--space-border); text-decoration: line-through; box-shadow: none; }
+.cbtn:disabled { cursor: default; }
+.ckey { font-size: 9px; color: var(--dim); min-width: 14px; }
+.qinput {
+  width: 100%; border: 1px solid var(--space-border);
+  background: var(--space-mid); color: var(--white);
+  font-family: 'Courier New', monospace;
+  font-size: clamp(13px, 3.5vw, 16px);
+  padding: 12px; outline: none; margin-bottom: 8px;
+}
+.qinput:focus { border-color: var(--cyan); border-width: 2px; }
+.qsubmit {
+  background: var(--cyan); color: var(--space-bg); border: none;
+  font-family: 'Courier New', monospace; font-weight: 900;
+  font-size: 12px; letter-spacing: 2px;
+  padding: 12px; cursor: pointer; width: 100%;
+}
+.qfb { font-size: clamp(11px,3vw,13px); min-height:20px; text-align:center; font-weight:700; letter-spacing:1px; color: var(--white); }
+.qfb.ok  { color: var(--cyan); }
+.qfb.ok::before { content:'✓  '; }
+.qfb.fail { color: var(--red); }
+.qfb.fail::before { content:'✗  '; }
+.qcont {
+  background: var(--cyan); color: var(--space-bg); border: none;
+  font-family: 'Courier New', monospace; font-weight: 900;
+  font-size: 11px; letter-spacing: 3px;
+  padding: 12px 28px; cursor: pointer; display: none;
+  box-shadow: 2px 2px 0 rgba(0,207,255,0.3);
+}
+.qcont.show { display: block; }
+.qcont:active { transform: translate(1px,1px); box-shadow: none; }
+
+/* ── GAME OVER ── */
+#gameOverScreen { gap: 14px; padding: 24px; background: var(--space-bg); }
+.go-title { font-size: clamp(28px, 8vw, 48px); font-weight: 900; letter-spacing: 4px; color: var(--red); text-shadow: 0 0 20px rgba(255,50,34,0.4); }
+.go-stats { font-size: clamp(11px, 2.8vw, 14px); line-height: 2.2; text-align: center; color: var(--dim); }
+.go-btns { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 300px; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<!-- TITLE -->
+<div class="screen active" id="titleScreen">
+  <canvas id="titleCanvas"></canvas>
+  <div class="title-content">
+    <div class="title-word">VERBSPACE</div>
+    <div class="title-sub">it's getting tense</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:4px;">
+      <div style="font-size:9px;letter-spacing:4px;color:#5566aa;text-transform:uppercase;margin-bottom:2px;">study mode</div>
+      <div style="display:flex;gap:8px;" id="modeButtons">
+        <button class="pxbtn mode-btn active-mode" data-mode="both" style="font-size:11px;padding:10px 16px;letter-spacing:2px;">BOTH</button>
+        <button class="pxbtn mode-btn outline" data-mode="ps" style="font-size:11px;padding:10px 16px;letter-spacing:2px;">PAST SIMPLE</button>
+        <button class="pxbtn mode-btn outline" data-mode="pp" style="font-size:11px;padding:10px 16px;letter-spacing:2px;">PARTICIPLE</button>
+      </div>
+    </div>
+    <button class="pxbtn" id="startBtn">[ START ]</button>
+  </div>
+</div>
+
+<!-- LESSON -->
+<div class="screen" id="lessonScreen" style="position:fixed;inset:0;background:#0a0d2e;z-index:10;">
+  <div style="position:absolute;top:0;left:0;right:0;bottom:64px;padding:16px 16px 12px;display:flex;flex-direction:column;align-items:center;gap:10px;overflow-y:auto;">
+    <div class="ls-title" id="lsTitle"></div>
+    <div class="ls-rule" id="lsRule"></div>
+    <table class="ls-table" id="lsTable"></table>
+  </div>
+  <div style="position:absolute;bottom:0;left:0;right:0;height:64px;background:#0a0d2e;border-top:2px solid #2a3278;display:flex;align-items:center;justify-content:center;">
+    <button class="pxbtn" id="lessonPlayBtn">GOT IT →</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div class="screen" id="gameScreen">
+  <canvas id="gameCanvas"></canvas>
+</div>
+
+<!-- TITLE CARD — shown before question -->
+<div id="titleCard" style="display:none;position:fixed;inset:0;background:#0a0d2e;z-index:60;">
+  <div id="tcScroll" style="position:absolute;top:0;left:0;right:0;bottom:64px;padding:14px 16px;overflow-y:auto;">
+    <div style="font-size:8px;letter-spacing:4px;color:#5566aa;text-transform:uppercase;text-align:center;margin-bottom:10px;" id="tcLabel"></div>
+    <div style="border:2px solid #2a3278;padding:12px 14px;background:#141a4a;box-shadow:0 0 20px rgba(0,207,255,0.06);">
+      <div style="font-size:8px;letter-spacing:3px;color:#5566aa;text-transform:uppercase;margin-bottom:6px;" id="tcType"></div>
+      <div style="font-size:clamp(13px,4vw,18px);font-weight:900;letter-spacing:2px;margin-bottom:8px;font-family:'Courier New',monospace;color:#00cfff;" id="tcName"></div>
+      <div style="font-size:clamp(9px,2.2vw,11px);line-height:1.6;color:#ccd6ff;margin-bottom:10px;font-family:'Courier New',monospace;" id="tcRule"></div>
+      <table id="tcTable" style="width:100%;border-collapse:collapse;font-family:'Courier New',monospace;font-size:clamp(8px,2vw,10px);"></table>
+    </div>
+  </div>
+  <div style="position:absolute;bottom:0;left:0;right:0;height:64px;background:#0a0d2e;border-top:2px solid #2a3278;display:flex;align-items:center;justify-content:center;">
+    <button class="pxbtn" id="gotItBtn">GOT IT →</button>
+  </div>
+</div>
+
+<!-- QUESTION -->
+<div id="questionOverlay">
+  <div class="qlabel" id="qlabel">ship destroyed</div>
+  <div class="qlives" id="qlives"></div>
+  <div class="qcard">
+    <div class="qtype" id="qtype"></div>
+    <div class="qtext" id="qtext"></div>
+    <div class="qverb" id="qverb" style="display:none"></div>
+    <div id="qbody"></div>
+  </div>
+  <div class="qfb" id="qfb"></div>
+  <button class="qcont" id="qcont" onclick="continueAfterQ()">CONTINUE →</button>
+</div>
+
+<!-- GAME OVER -->
+<div class="screen" id="gameOverScreen">
+  <div class="go-title">GAME OVER</div>
+  <div class="go-stats" id="goStats"></div>
+  <div class="go-btns">
+    <button class="pxbtn" onclick="replayLevel()">PLAY AGAIN</button>
+    <button class="pxbtn outline" onclick="goTitle()">TITLE</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+//  STUDY MODE  (ps | pp | both)
+// ══════════════════════════════════════
+let studyMode = 'both'; // 'ps' | 'pp' | 'both'
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      studyMode = btn.dataset.mode;
+      document.querySelectorAll('.mode-btn').forEach(b => {
+        b.classList.remove('active-mode');
+        b.classList.add('outline');
+      });
+      btn.classList.add('active-mode');
+      btn.classList.remove('outline');
+    });
+  });
+});
+
+// ══════════════════════════════════════
+//  SOUND ENGINE  (Web Audio, 8-bit)
+// ══════════════════════════════════════
+let audioCtx = null;
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playTone(freq, type, duration, vol=0.18, startDelay=0) {
+  try {
+    const ac = getAudio();
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.connect(gain); gain.connect(ac.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ac.currentTime + startDelay);
+    gain.gain.setValueAtTime(vol, ac.currentTime + startDelay);
+    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + startDelay + duration);
+    osc.start(ac.currentTime + startDelay);
+    osc.stop(ac.currentTime + startDelay + duration);
+  } catch(e) {}
+}
+
+function playNoise(duration, vol=0.12, startDelay=0) {
+  try {
+    const ac = getAudio();
+    const bufSize = ac.sampleRate * duration;
+    const buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i=0; i<bufSize; i++) data[i] = Math.random()*2-1;
+    const src = ac.createBufferSource();
+    src.buffer = buf;
+    const gain = ac.createGain();
+    src.connect(gain); gain.connect(ac.destination);
+    gain.gain.setValueAtTime(vol, ac.currentTime + startDelay);
+    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + startDelay + duration);
+    src.start(ac.currentTime + startDelay);
+  } catch(e) {}
+}
+
+const SFX = {
+  shoot() {
+    playTone(880, 'square', 0.04, 0.12);
+    playTone(440, 'square', 0.06, 0.08, 0.03);
+  },
+  explosion() {
+    playNoise(0.22, 0.22);
+    playTone(90, 'sawtooth', 0.18, 0.15, 0.02);
+  },
+  playerDeath() {
+    playTone(330, 'sawtooth', 0.12, 0.20);
+    playTone(220, 'sawtooth', 0.15, 0.18, 0.10);
+    playTone(110, 'sawtooth', 0.20, 0.15, 0.22);
+    playNoise(0.35, 0.15, 0.05);
+  },
+  correct() {
+    playTone(523, 'square', 0.08, 0.14);
+    playTone(659, 'square', 0.08, 0.14, 0.09);
+    playTone(784, 'square', 0.12, 0.14, 0.18);
+  },
+  wrong() {
+    playTone(200, 'square', 0.10, 0.16);
+    playTone(150, 'square', 0.14, 0.16, 0.10);
+  }
+};
+
+// ── Background music ──
+let bgMusicPlaying = false;
+let bgMusicNodes = [];
+let bgMusicLoop = null;
+
+const BPM  = 120;
+const BEAT = 60 / BPM;
+const E8   = BEAT / 2;
+const BAR  = BEAT * 4;
+
+const CHORD_DEFS = {
+  E:  {
+    root: 82.41, fifth: 123.47,
+    stab: [329.63, 415.30, 493.88],
+  },
+  Cs: {
+    root: 69.30, fifth: 103.83,
+    stab: [277.18, 329.63, 415.30, 493.88],
+  },
+  A:  {
+    root: 55.00, fifth: 82.41,
+    stab: [277.18, 329.63, 415.30],
+  },
+};
+
+const PENTA = [
+  329.63, 369.99, 415.30, 493.88, 554.37,
+  659.25, 739.99, 830.61,
+];
+
+function rndFrom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function pickProgression() {
+  const opts = ['E','Cs','A'];
+  return ['E', rndFrom(opts), rndFrom(opts), rndFrom(['Cs','A'])];
+}
+
+function scheduleNote(ac, freq, t, dur, type, vol, gate) {
+  const osc  = ac.createOscillator();
+  const gain = ac.createGain();
+  osc.connect(gain); gain.connect(ac.destination);
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, t);
+  gain.gain.setValueAtTime(vol, t);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + dur * gate);
+  osc.start(t); osc.stop(t + dur);
+  return osc;
+}
+
+function scheduleKick(ac, t) {
+  // Very soft, high-passed — just a whisper of texture, not a click
+  const buf  = ac.createBuffer(1, Math.ceil(ac.sampleRate * 0.08), ac.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+  const src  = ac.createBufferSource();
+  src.buffer = buf;
+  const filt = ac.createBiquadFilter();
+  filt.type  = 'highpass';
+  filt.frequency.setValueAtTime(800, t);
+  const gain = ac.createGain();
+  gain.gain.setValueAtTime(0.04, t);   // very quiet
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.06);
+  src.connect(filt); filt.connect(gain); gain.connect(ac.destination);
+  src.start(t);
+  return src;
+}
+
+// Melody grid: allowed eighth-note slots within a bar
+const GRID = [0, 2, 4, 5, 6];
+
+function makeMelodyBar() {
+  const slots = [...GRID].sort(() => Math.random() - 0.5).slice(0, 2 + Math.floor(Math.random() * 2));
+  return slots.sort((a,b) => a-b).map(slot => ({ slot, freq: rndFrom(PENTA) }));
+}
+
+function scheduleMusicLoop() {
+  if (!bgMusicPlaying) return;
+  try {
+    const ac   = getAudio();
+    const t0   = ac.currentTime + 0.05;
+    const prog = pickProgression();
+    const nodes = [];
+    const loopDur = BAR * 4;
+
+    for (let bar = 0; bar < 4; bar++) {
+      const bT    = t0 + bar * BAR;
+      const chord = CHORD_DEFS[prog[bar]];
+
+      // ── CHORD — long pad on beat 1 only, held for most of the bar ──
+      // Occasionally (1 in 3) also a soft stab somewhere in the bar on beat 3 or 4
+      const chordDur = Math.random() < 0.4 ? BAR * 0.55 : BAR * 0.85;
+      for (const freq of chord.stab) {
+        nodes.push(scheduleNote(ac, freq, bT, chordDur, 'triangle', 0.018, 0.92));
+      }
+      if (Math.random() < 0.33) {
+        const extraBeat = Math.random() < 0.5 ? BEAT * 2 : BEAT * 3;
+        for (const freq of chord.stab) {
+          nodes.push(scheduleNote(ac, freq, bT + extraBeat, BEAT * 0.6, 'triangle', 0.011, 0.80));
+        }
+      }
+
+      // ── BASS — irregular, never on the same beat every bar ──
+      // Pick 1–2 hits per bar from off-pulse positions, occasionally skip entirely
+      if (Math.random() < 0.75) {
+        const bassSlots = [0, 1, 2, 3, 4, 5, 6, 7]; // all eighth positions
+        // Avoid putting two notes on consecutive downbeats by picking randomly
+        const shuffled = [...bassSlots].sort(() => Math.random() - 0.5);
+        const numHits  = 1 + Math.floor(Math.random() * 2);
+        const chosen   = shuffled.slice(0, numHits).sort((a,b) => a-b);
+        const bassNote = Math.random() < 0.6 ? chord.root : chord.fifth;
+        for (const slot of chosen) {
+          const t2 = bT + slot * E8;
+          nodes.push(scheduleNote(ac, bassNote, t2, E8 * 1.6, 'square', 0.06, 0.72));
+        }
+      }
+
+      // ── NO PERCUSSION ──
+
+      // ── MELODY — grid-locked pentatonic ──
+      for (const { slot, freq } of makeMelodyBar()) {
+        const t          = bT + slot * E8;
+        const nextSlots  = GRID.filter(s => s > slot);
+        const durEighths = nextSlots.length ? nextSlots[0] - slot : 8 - slot;
+        nodes.push(scheduleNote(ac, freq, t, durEighths * E8, 'triangle', 0.05, 0.70));
+      }
+    }
+
+    bgMusicNodes = nodes.filter(Boolean);
+
+    bgMusicLoop = setTimeout(() => {
+      bgMusicNodes = [];
+      scheduleMusicLoop();
+    }, loopDur * 1000 - 60);
+
+  } catch(e) {}
+}
+
+function startBgMusic() {
+  if (bgMusicPlaying) return;
+  bgMusicPlaying = true;
+  scheduleMusicLoop();
+}
+
+function stopBgMusic() {
+  bgMusicPlaying = false;
+  if (bgMusicLoop) clearTimeout(bgMusicLoop);
+  bgMusicNodes.forEach(n => { try { n.stop(); } catch(e) {} });
+  bgMusicNodes = [];
+}
+
+// Shoot timer — fire SFX periodically during gameplay
+let shootTimer = 0;
+
+// ══════════════════════════════════════
+//  VERB DATA
+// ══════════════════════════════════════
+const LEVELS = [
+
+// ─── LEVEL 0: FREE FLIGHT ───
+{
+  id:0, name:"FREE FLIGHT",
+  rule:"No verbs yet.\nLearn to fly. Survive.\nSlide your ship left and right.\nGrab the pink sphere for hyperspeed.",
+  examples:[], verbs:[], questionTypes:[], knownCats:[], noVerbs:true,
+},
+
+// ─── SHARED VERB POOLS ───
+// (defined inline per level, using cat tags for pool filtering)
+
+// ─── LEVEL 1: REGULAR VERBS ───
+{
+  id:1, name:"REGULAR VERBS",
+  rule:"Add -ED or -D to form the past simple and past participle.\nBoth forms are always the same.",
+  examples:[['like','liked','liked'],['play','played','played'],['walk','walked','walked'],['love','loved','loved']],
+  verbs:[
+    {p:'like',ps:'liked',pp:'liked',cat:'Regular'},
+    {p:'play',ps:'played',pp:'played',cat:'Regular'},
+    {p:'walk',ps:'walked',pp:'walked',cat:'Regular'},
+    {p:'love',ps:'loved',pp:'loved',cat:'Regular'},
+    {p:'talk',ps:'talked',pp:'talked',cat:'Regular'},
+    {p:'work',ps:'worked',pp:'worked',cat:'Regular'},
+    {p:'watch',ps:'watched',pp:'watched',cat:'Regular'},
+    {p:'open',ps:'opened',pp:'opened',cat:'Regular'},
+    {p:'close',ps:'closed',pp:'closed',cat:'Regular'},
+    {p:'start',ps:'started',pp:'started',cat:'Regular'},
+    {p:'stop',ps:'stopped',pp:'stopped',cat:'Regular'},
+    {p:'help',ps:'helped',pp:'helped',cat:'Regular'},
+    {p:'move',ps:'moved',pp:'moved',cat:'Regular'},
+    {p:'live',ps:'lived',pp:'lived',cat:'Regular'},
+    {p:'look',ps:'looked',pp:'looked',cat:'Regular'},
+    {p:'turn',ps:'turned',pp:'turned',cat:'Regular'},
+    {p:'use',ps:'used',pp:'used',cat:'Regular'},
+    {p:'ask',ps:'asked',pp:'asked',cat:'Regular'},
+    {p:'need',ps:'needed',pp:'needed',cat:'Regular'},
+    {p:'want',ps:'wanted',pp:'wanted',cat:'Regular'},
+    {p:'call',ps:'called',pp:'called',cat:'Regular'},
+    {p:'wait',ps:'waited',pp:'waited',cat:'Regular'},
+    {p:'change',ps:'changed',pp:'changed',cat:'Regular'},
+    {p:'follow',ps:'followed',pp:'followed',cat:'Regular'},
+    {p:'try',ps:'tried',pp:'tried',cat:'Regular'},
+    {p:'add',ps:'added',pp:'added',cat:'Regular'},
+    {p:'listen',ps:'listened',pp:'listened',cat:'Regular'},
+    {p:'remember',ps:'remembered',pp:'remembered',cat:'Regular'},
+    {p:'believe',ps:'believed',pp:'believed',cat:'Regular'},
+    {p:'agree',ps:'agreed',pp:'agreed',cat:'Regular'},
+    {p:'decide',ps:'decided',pp:'decided',cat:'Regular'},
+    {p:'enjoy',ps:'enjoyed',pp:'enjoyed',cat:'Regular'},
+    {p:'visit',ps:'visited',pp:'visited',cat:'Regular'},
+    {p:'travel',ps:'traveled',pp:'traveled',cat:'Regular'},
+    {p:'clean',ps:'cleaned',pp:'cleaned',cat:'Regular'},
+    {p:'check',ps:'checked',pp:'checked',cat:'Regular'},
+    {p:'push',ps:'pushed',pp:'pushed',cat:'Regular'},
+    {p:'pull',ps:'pulled',pp:'pulled',cat:'Regular'},
+    {p:'jump',ps:'jumped',pp:'jumped',cat:'Regular'},
+    {p:'climb',ps:'climbed',pp:'climbed',cat:'Regular'},
+    {p:'finish',ps:'finished',pp:'finished',cat:'Regular'},
+    {p:'fix',ps:'fixed',pp:'fixed',cat:'Regular'},
+    {p:'save',ps:'saved',pp:'saved',cat:'Regular'},
+    {p:'drop',ps:'dropped',pp:'dropped',cat:'Regular'},
+    {p:'pick',ps:'picked',pp:'picked',cat:'Regular'},
+    {p:'miss',ps:'missed',pp:'missed',cat:'Regular'},
+    {p:'laugh',ps:'laughed',pp:'laughed',cat:'Regular'},
+    {p:'smile',ps:'smiled',pp:'smiled',cat:'Regular'},
+    {p:'dance',ps:'danced',pp:'danced',cat:'Regular'},
+    {p:'learn',ps:'learned',pp:'learned',cat:'Regular'},
+  ],
+  questionTypes:['yesno','choice','write','wrongright'], knownCats:['Regular'],
+},
+
+// ─── LEVEL 2: REGULAR AGAIN ───
+{
+  id:2, name:"REGULAR VERBS — AGAIN",
+  rule:"Add -ED or -D to form the past simple and past participle.\nBoth forms are always the same.",
+  examples:[['explain','explained','explained'],['create','created','created'],['develop','developed','developed'],['discuss','discussed','discussed']],
+  verbs:[
+    {p:'explain',ps:'explained',pp:'explained',cat:'Regular'},
+    {p:'create',ps:'created',pp:'created',cat:'Regular'},
+    {p:'develop',ps:'developed',pp:'developed',cat:'Regular'},
+    {p:'discuss',ps:'discussed',pp:'discussed',cat:'Regular'},
+    {p:'describe',ps:'described',pp:'described',cat:'Regular'},
+    {p:'compare',ps:'compared',pp:'compared',cat:'Regular'},
+    {p:'complete',ps:'completed',pp:'completed',cat:'Regular'},
+    {p:'continue',ps:'continued',pp:'continued',cat:'Regular'},
+    {p:'consider',ps:'considered',pp:'considered',cat:'Regular'},
+    {p:'include',ps:'included',pp:'included',cat:'Regular'},
+    {p:'increase',ps:'increased',pp:'increased',cat:'Regular'},
+    {p:'improve',ps:'improved',pp:'improved',cat:'Regular'},
+    {p:'introduce',ps:'introduced',pp:'introduced',cat:'Regular'},
+    {p:'produce',ps:'produced',pp:'produced',cat:'Regular'},
+    {p:'reduce',ps:'reduced',pp:'reduced',cat:'Regular'},
+    {p:'allow',ps:'allowed',pp:'allowed',cat:'Regular'},
+    {p:'appear',ps:'appeared',pp:'appeared',cat:'Regular'},
+    {p:'remain',ps:'remained',pp:'remained',cat:'Regular'},
+    {p:'return',ps:'returned',pp:'returned',cat:'Regular'},
+    {p:'plan',ps:'planned',pp:'planned',cat:'Regular'},
+    {p:'expect',ps:'expected',pp:'expected',cat:'Regular'},
+    {p:'offer',ps:'offered',pp:'offered',cat:'Regular'},
+    {p:'cover',ps:'covered',pp:'covered',cat:'Regular'},
+    {p:'support',ps:'supported',pp:'supported',cat:'Regular'},
+    {p:'connect',ps:'connected',pp:'connected',cat:'Regular'},
+    {p:'collect',ps:'collected',pp:'collected',cat:'Regular'},
+    {p:'contain',ps:'contained',pp:'contained',cat:'Regular'},
+    {p:'control',ps:'controlled',pp:'controlled',cat:'Regular'},
+    {p:'count',ps:'counted',pp:'counted',cat:'Regular'},
+    {p:'deliver',ps:'delivered',pp:'delivered',cat:'Regular'},
+    {p:'depend',ps:'depended',pp:'depended',cat:'Regular'},
+    {p:'deserve',ps:'deserved',pp:'deserved',cat:'Regular'},
+    {p:'divide',ps:'divided',pp:'divided',cat:'Regular'},
+    {p:'earn',ps:'earned',pp:'earned',cat:'Regular'},
+    {p:'encourage',ps:'encouraged',pp:'encouraged',cat:'Regular'},
+    {p:'enter',ps:'entered',pp:'entered',cat:'Regular'},
+    {p:'exist',ps:'existed',pp:'existed',cat:'Regular'},
+    {p:'fail',ps:'failed',pp:'failed',cat:'Regular'},
+    {p:'form',ps:'formed',pp:'formed',cat:'Regular'},
+    {p:'grab',ps:'grabbed',pp:'grabbed',cat:'Regular'},
+    {p:'handle',ps:'handled',pp:'handled',cat:'Regular'},
+    {p:'identify',ps:'identified',pp:'identified',cat:'Regular'},
+    {p:'imagine',ps:'imagined',pp:'imagined',cat:'Regular'},
+    {p:'join',ps:'joined',pp:'joined',cat:'Regular'},
+    {p:'launch',ps:'launched',pp:'launched',cat:'Regular'},
+    {p:'manage',ps:'managed',pp:'managed',cat:'Regular'},
+    {p:'measure',ps:'measured',pp:'measured',cat:'Regular'},
+    {p:'notice',ps:'noticed',pp:'noticed',cat:'Regular'},
+    {p:'prepare',ps:'prepared',pp:'prepared',cat:'Regular'},
+    {p:'prevent',ps:'prevented',pp:'prevented',cat:'Regular'},
+    {p:'protect',ps:'protected',pp:'protected',cat:'Regular'},
+    {p:'realize',ps:'realized',pp:'realized',cat:'Regular'},
+    {p:'receive',ps:'received',pp:'received',cat:'Regular'},
+    {p:'record',ps:'recorded',pp:'recorded',cat:'Regular'},
+    {p:'replace',ps:'replaced',pp:'replaced',cat:'Regular'},
+    {p:'report',ps:'reported',pp:'reported',cat:'Regular'},
+    {p:'represent',ps:'represented',pp:'represented',cat:'Regular'},
+    {p:'respond',ps:'responded',pp:'responded',cat:'Regular'},
+    {p:'select',ps:'selected',pp:'selected',cat:'Regular'},
+    {p:'serve',ps:'served',pp:'served',cat:'Regular'},
+    {p:'share',ps:'shared',pp:'shared',cat:'Regular'},
+    {p:'solve',ps:'solved',pp:'solved',cat:'Regular'},
+    {p:'suggest',ps:'suggested',pp:'suggested',cat:'Regular'},
+    {p:'survive',ps:'survived',pp:'survived',cat:'Regular'},
+    {p:'train',ps:'trained',pp:'trained',cat:'Regular'},
+    {p:'update',ps:'updated',pp:'updated',cat:'Regular'},
+    {p:'warn',ps:'warned',pp:'warned',cat:'Regular'},
+    {p:'worry',ps:'worried',pp:'worried',cat:'Regular'},
+    {p:'wonder',ps:'wondered',pp:'wondered',cat:'Regular'},
+  ],
+  questionTypes:['yesno','choice','write','wrongright'], knownCats:['Regular'],
+},
+
+// ─── LEVEL 3: SEMI-REGULAR ───
+{
+  id:3, name:"SEMI-REGULAR VERBS",
+  rule:"The vowel shifts in the past tense.\nThe participle adds -N or -EN at the end.\nThese come from old Germanic strong verbs.",
+  examples:[['forget','forgot','forgotten'],['freeze','froze','frozen'],['grow','grew','grown'],['know','knew','known']],
+  verbs:[
+    {p:'begin',ps:'began',pp:'begun',cat:'Semi-Regular'},
+    {p:'drink',ps:'drank',pp:'drunk',cat:'Semi-Regular'},
+    {p:'ring',ps:'rang',pp:'rung',cat:'Semi-Regular'},
+    {p:'sing',ps:'sang',pp:'sung',cat:'Semi-Regular'},
+    {p:'sink',ps:'sank',pp:'sunk',cat:'Semi-Regular'},
+    {p:'swim',ps:'swam',pp:'swum',cat:'Semi-Regular'},
+    {p:'shrink',ps:'shrank',pp:'shrunk',cat:'Semi-Regular'},
+    {p:'spin',ps:'spun',pp:'spun',cat:'Semi-Regular'},
+    {p:'win',ps:'won',pp:'won',cat:'Semi-Regular'},
+    {p:'dig',ps:'dug',pp:'dug',cat:'Semi-Regular'},
+    {p:'hang',ps:'hung',pp:'hung',cat:'Semi-Regular'},
+    {p:'stick',ps:'stuck',pp:'stuck',cat:'Semi-Regular'},
+    {p:'strike',ps:'struck',pp:'struck',cat:'Semi-Regular'},
+    {p:'cling',ps:'clung',pp:'clung',cat:'Semi-Regular'},
+    {p:'fling',ps:'flung',pp:'flung',cat:'Semi-Regular'},
+    {p:'swing',ps:'swung',pp:'swung',cat:'Semi-Regular'},
+    {p:'write',ps:'wrote',pp:'written',cat:'Semi-Regular'},
+    {p:'ride',ps:'rode',pp:'ridden',cat:'Semi-Regular'},
+    {p:'rise',ps:'rose',pp:'risen',cat:'Semi-Regular'},
+    {p:'drive',ps:'drove',pp:'driven',cat:'Semi-Regular'},
+    {p:'bite',ps:'bit',pp:'bitten',cat:'Semi-Regular'},
+    {p:'hide',ps:'hid',pp:'hidden',cat:'Semi-Regular'},
+    {p:'speak',ps:'spoke',pp:'spoken',cat:'Semi-Regular'},
+    {p:'break',ps:'broke',pp:'broken',cat:'Semi-Regular'},
+    {p:'choose',ps:'chose',pp:'chosen',cat:'Semi-Regular'},
+    {p:'steal',ps:'stole',pp:'stolen',cat:'Semi-Regular'},
+    {p:'wake',ps:'woke',pp:'woken',cat:'Semi-Regular'},
+    {p:'freeze',ps:'froze',pp:'frozen',cat:'Semi-Regular'},
+    {p:'fly',ps:'flew',pp:'flown',cat:'Semi-Regular'},
+    {p:'blow',ps:'blew',pp:'blown',cat:'Semi-Regular'},
+    {p:'draw',ps:'drew',pp:'drawn',cat:'Semi-Regular'},
+    {p:'throw',ps:'threw',pp:'thrown',cat:'Semi-Regular'},
+    {p:'grow',ps:'grew',pp:'grown',cat:'Semi-Regular'},
+    {p:'know',ps:'knew',pp:'known',cat:'Semi-Regular'},
+    {p:'wear',ps:'wore',pp:'worn',cat:'Semi-Regular'},
+    {p:'tear',ps:'tore',pp:'torn',cat:'Semi-Regular'},
+    {p:'see',ps:'saw',pp:'seen',cat:'Semi-Regular'},
+    {p:'fall',ps:'fell',pp:'fallen',cat:'Semi-Regular'},
+    {p:'eat',ps:'ate',pp:'eaten',cat:'Semi-Regular'},
+    {p:'give',ps:'gave',pp:'given',cat:'Semi-Regular'},
+    {p:'take',ps:'took',pp:'taken',cat:'Semi-Regular'},
+    {p:'shake',ps:'shook',pp:'shaken',cat:'Semi-Regular'},
+    {p:'get',ps:'got',pp:'gotten',cat:'Semi-Regular'},
+    {p:'forget',ps:'forgot',pp:'forgotten',cat:'Semi-Regular'},
+    {p:'run',ps:'ran',pp:'run',cat:'Semi-Regular'},
+    {p:'come',ps:'came',pp:'come',cat:'Semi-Regular'},
+    {p:'become',ps:'became',pp:'become',cat:'Semi-Regular'},
+  ],
+  questionTypes:['yesno','choice','write'], knownCats:['Semi-Regular'],
+},
+
+// ─── LEVEL 4: SEMI-REGULAR AGAIN ───
+{
+  id:4, name:"SEMI-REGULAR VERBS — AGAIN",
+  rule:"The vowel shifts in the past tense.\nThe participle adds -N or -EN at the end.\nThese come from old Germanic strong verbs.",
+  examples:[['speak','spoke','spoken'],['fly','flew','flown'],['give','gave','given'],['take','took','taken']],
+  verbs:[
+    {p:'begin',ps:'began',pp:'begun',cat:'Semi-Regular'},
+    {p:'drink',ps:'drank',pp:'drunk',cat:'Semi-Regular'},
+    {p:'sing',ps:'sang',pp:'sung',cat:'Semi-Regular'},
+    {p:'swim',ps:'swam',pp:'swum',cat:'Semi-Regular'},
+    {p:'ring',ps:'rang',pp:'rung',cat:'Semi-Regular'},
+    {p:'sink',ps:'sank',pp:'sunk',cat:'Semi-Regular'},
+    {p:'shrink',ps:'shrank',pp:'shrunk',cat:'Semi-Regular'},
+    {p:'win',ps:'won',pp:'won',cat:'Semi-Regular'},
+    {p:'dig',ps:'dug',pp:'dug',cat:'Semi-Regular'},
+    {p:'stick',ps:'stuck',pp:'stuck',cat:'Semi-Regular'},
+    {p:'strike',ps:'struck',pp:'struck',cat:'Semi-Regular'},
+    {p:'hang',ps:'hung',pp:'hung',cat:'Semi-Regular'},
+    {p:'swing',ps:'swung',pp:'swung',cat:'Semi-Regular'},
+    {p:'fling',ps:'flung',pp:'flung',cat:'Semi-Regular'},
+    {p:'write',ps:'wrote',pp:'written',cat:'Semi-Regular'},
+    {p:'ride',ps:'rode',pp:'ridden',cat:'Semi-Regular'},
+    {p:'drive',ps:'drove',pp:'driven',cat:'Semi-Regular'},
+    {p:'bite',ps:'bit',pp:'bitten',cat:'Semi-Regular'},
+    {p:'hide',ps:'hid',pp:'hidden',cat:'Semi-Regular'},
+    {p:'speak',ps:'spoke',pp:'spoken',cat:'Semi-Regular'},
+    {p:'break',ps:'broke',pp:'broken',cat:'Semi-Regular'},
+    {p:'choose',ps:'chose',pp:'chosen',cat:'Semi-Regular'},
+    {p:'steal',ps:'stole',pp:'stolen',cat:'Semi-Regular'},
+    {p:'wake',ps:'woke',pp:'woken',cat:'Semi-Regular'},
+    {p:'freeze',ps:'froze',pp:'frozen',cat:'Semi-Regular'},
+    {p:'fly',ps:'flew',pp:'flown',cat:'Semi-Regular'},
+    {p:'blow',ps:'blew',pp:'blown',cat:'Semi-Regular'},
+    {p:'draw',ps:'drew',pp:'drawn',cat:'Semi-Regular'},
+    {p:'throw',ps:'threw',pp:'thrown',cat:'Semi-Regular'},
+    {p:'grow',ps:'grew',pp:'grown',cat:'Semi-Regular'},
+    {p:'know',ps:'knew',pp:'known',cat:'Semi-Regular'},
+    {p:'wear',ps:'wore',pp:'worn',cat:'Semi-Regular'},
+    {p:'tear',ps:'tore',pp:'torn',cat:'Semi-Regular'},
+    {p:'see',ps:'saw',pp:'seen',cat:'Semi-Regular'},
+    {p:'fall',ps:'fell',pp:'fallen',cat:'Semi-Regular'},
+    {p:'eat',ps:'ate',pp:'eaten',cat:'Semi-Regular'},
+    {p:'give',ps:'gave',pp:'given',cat:'Semi-Regular'},
+    {p:'take',ps:'took',pp:'taken',cat:'Semi-Regular'},
+    {p:'shake',ps:'shook',pp:'shaken',cat:'Semi-Regular'},
+    {p:'get',ps:'got',pp:'gotten',cat:'Semi-Regular'},
+    {p:'forget',ps:'forgot',pp:'forgotten',cat:'Semi-Regular'},
+    {p:'run',ps:'ran',pp:'run',cat:'Semi-Regular'},
+    {p:'come',ps:'came',pp:'come',cat:'Semi-Regular'},
+    {p:'become',ps:'became',pp:'become',cat:'Semi-Regular'},
+    {p:'rise',ps:'rose',pp:'risen',cat:'Semi-Regular'},
+    {p:'slide',ps:'slid',pp:'slid',cat:'Semi-Regular'},
+  ],
+  questionTypes:['yesno','choice','write','wrongright'], knownCats:['Semi-Regular'],
+},
+
+// ─── LEVEL 5: MIX REGULAR + SEMI-REGULAR ───
+{
+  id:5, name:"REGULAR + SEMI-REGULAR MIX",
+  rule:"Regular verbs add -ED or -D.\nSemi-regular verbs shift their vowel and add -N or -EN.\nCan you tell them apart?",
+  examples:[['play','played','played'],['speak','spoke','spoken'],['work','worked','worked'],['grow','grew','grown']],
+  verbs:[
+    {p:'like',ps:'liked',pp:'liked',cat:'Regular'},
+    {p:'work',ps:'worked',pp:'worked',cat:'Regular'},
+    {p:'play',ps:'played',pp:'played',cat:'Regular'},
+    {p:'talk',ps:'talked',pp:'talked',cat:'Regular'},
+    {p:'start',ps:'started',pp:'started',cat:'Regular'},
+    {p:'stop',ps:'stopped',pp:'stopped',cat:'Regular'},
+    {p:'change',ps:'changed',pp:'changed',cat:'Regular'},
+    {p:'learn',ps:'learned',pp:'learned',cat:'Regular'},
+    {p:'finish',ps:'finished',pp:'finished',cat:'Regular'},
+    {p:'help',ps:'helped',pp:'helped',cat:'Regular'},
+    {p:'try',ps:'tried',pp:'tried',cat:'Regular'},
+    {p:'use',ps:'used',pp:'used',cat:'Regular'},
+    {p:'enjoy',ps:'enjoyed',pp:'enjoyed',cat:'Regular'},
+    {p:'decide',ps:'decided',pp:'decided',cat:'Regular'},
+    {p:'explain',ps:'explained',pp:'explained',cat:'Regular'},
+    {p:'speak',ps:'spoke',pp:'spoken',cat:'Semi-Regular'},
+    {p:'write',ps:'wrote',pp:'written',cat:'Semi-Regular'},
+    {p:'grow',ps:'grew',pp:'grown',cat:'Semi-Regular'},
+    {p:'know',ps:'knew',pp:'known',cat:'Semi-Regular'},
+    {p:'drink',ps:'drank',pp:'drunk',cat:'Semi-Regular'},
+    {p:'see',ps:'saw',pp:'seen',cat:'Semi-Regular'},
+    {p:'get',ps:'got',pp:'gotten',cat:'Semi-Regular'},
+    {p:'give',ps:'gave',pp:'given',cat:'Semi-Regular'},
+    {p:'take',ps:'took',pp:'taken',cat:'Semi-Regular'},
+    {p:'run',ps:'ran',pp:'run',cat:'Semi-Regular'},
+    {p:'come',ps:'came',pp:'come',cat:'Semi-Regular'},
+    {p:'fall',ps:'fell',pp:'fallen',cat:'Semi-Regular'},
+    {p:'break',ps:'broke',pp:'broken',cat:'Semi-Regular'},
+    {p:'forget',ps:'forgot',pp:'forgotten',cat:'Semi-Regular'},
+    {p:'throw',ps:'threw',pp:'thrown',cat:'Semi-Regular'},
+  ],
+  questionTypes:['yesno','choice','write','wrongright'], knownCats:['Regular','Semi-Regular'],
+},
+
+// ─── LEVEL 6: -OUGHT ───
+{
+  id:6, name:"-OUGHT VERBS",
+  rule:"The vowel was crushed centuries ago by sound pressure.\nThe -GHT is the ghost of a sound that no longer exists.\nPast simple and past participle are always identical.",
+  examples:[['fight','fought','fought'],['think','thought','thought'],['buy','bought','bought'],['catch','caught','caught']],
+  verbs:[
+    {p:'fight',ps:'fought',pp:'fought',cat:'-ought'},
+    {p:'think',ps:'thought',pp:'thought',cat:'-ought'},
+    {p:'buy',ps:'bought',pp:'bought',cat:'-ought'},
+    {p:'catch',ps:'caught',pp:'caught',cat:'-ought'},
+    {p:'teach',ps:'taught',pp:'taught',cat:'-ought'},
+    {p:'bring',ps:'brought',pp:'brought',cat:'-ought'},
+    {p:'seek',ps:'sought',pp:'sought',cat:'-ought'},
+    {p:'shoot',ps:'shot',pp:'shot',cat:'Wanna-Be'},
+    {p:'burn',ps:'burnt',pp:'burnt',cat:'Wanna-Be'},
+    {p:'build',ps:'built',pp:'built',cat:'Wanna-Be'},
+    {p:'lose',ps:'lost',pp:'lost',cat:'Wanna-Be'},
+    {p:'leave',ps:'left',pp:'left',cat:'Wanna-Be'},
+    {p:'feel',ps:'felt',pp:'felt',cat:'Wanna-Be'},
+    {p:'keep',ps:'kept',pp:'kept',cat:'Wanna-Be'},
+    {p:'sleep',ps:'slept',pp:'slept',cat:'Wanna-Be'},
+    {p:'deal',ps:'dealt',pp:'dealt',cat:'Wanna-Be'},
+    {p:'mean',ps:'meant',pp:'meant',cat:'Wanna-Be'},
+  ],
+  questionTypes:['yesno','choice','write'], knownCats:['-ought'],
+},
+
+// ─── LEVEL 7: -OUGHT AGAIN ───
+{
+  id:7, name:"-OUGHT VERBS — AGAIN",
+  rule:"The vowel was crushed centuries ago by sound pressure.\nThe -GHT is the ghost of a sound that no longer exists.\nPast simple and past participle are always identical.",
+  examples:[['teach','taught','taught'],['bring','brought','brought'],['shoot','shot','shot'],['lose','lost','lost']],
+  verbs:[
+    {p:'fight',ps:'fought',pp:'fought',cat:'-ought'},
+    {p:'think',ps:'thought',pp:'thought',cat:'-ought'},
+    {p:'buy',ps:'bought',pp:'bought',cat:'-ought'},
+    {p:'catch',ps:'caught',pp:'caught',cat:'-ought'},
+    {p:'teach',ps:'taught',pp:'taught',cat:'-ought'},
+    {p:'bring',ps:'brought',pp:'brought',cat:'-ought'},
+    {p:'seek',ps:'sought',pp:'sought',cat:'-ought'},
+    {p:'shoot',ps:'shot',pp:'shot',cat:'Wanna-Be'},
+    {p:'burn',ps:'burnt',pp:'burnt',cat:'Wanna-Be'},
+    {p:'build',ps:'built',pp:'built',cat:'Wanna-Be'},
+    {p:'lose',ps:'lost',pp:'lost',cat:'Wanna-Be'},
+    {p:'leave',ps:'left',pp:'left',cat:'Wanna-Be'},
+    {p:'feel',ps:'felt',pp:'felt',cat:'Wanna-Be'},
+    {p:'keep',ps:'kept',pp:'kept',cat:'Wanna-Be'},
+    {p:'sleep',ps:'slept',pp:'slept',cat:'Wanna-Be'},
+    {p:'deal',ps:'dealt',pp:'dealt',cat:'Wanna-Be'},
+    {p:'mean',ps:'meant',pp:'meant',cat:'Wanna-Be'},
+  ],
+  questionTypes:['yesno','choice','write','wrongright'], knownCats:['-ought'],
+},
+
+// ─── LEVEL 8: MIX REGULAR + SEMI-REGULAR + -OUGHT ───
+{
+  id:8, name:"REGULAR + SEMI-REGULAR + -OUGHT",
+  rule:"Three types together now.\nRegular: add -ED.\nSemi-regular: vowel shifts, adds -N.\n-Ought: vowel crushed, ends in -GHT.",
+  examples:[['walk','walked','walked'],['grow','grew','grown'],['think','thought','thought']],
+  verbs:[
+    {p:'work',ps:'worked',pp:'worked',cat:'Regular'},
+    {p:'play',ps:'played',pp:'played',cat:'Regular'},
+    {p:'start',ps:'started',pp:'started',cat:'Regular'},
+    {p:'help',ps:'helped',pp:'helped',cat:'Regular'},
+    {p:'change',ps:'changed',pp:'changed',cat:'Regular'},
+    {p:'finish',ps:'finished',pp:'finished',cat:'Regular'},
+    {p:'learn',ps:'learned',pp:'learned',cat:'Regular'},
+    {p:'enjoy',ps:'enjoyed',pp:'enjoyed',cat:'Regular'},
+    {p:'decide',ps:'decided',pp:'decided',cat:'Regular'},
+    {p:'try',ps:'tried',pp:'tried',cat:'Regular'},
+    {p:'speak',ps:'spoke',pp:'spoken',cat:'Semi-Regular'},
+    {p:'write',ps:'wrote',pp:'written',cat:'Semi-Regular'},
+    {p:'grow',ps:'grew',pp:'grown',cat:'Semi-Regular'},
+    {p:'see',ps:'saw',pp:'seen',cat:'Semi-Regular'},
+    {p:'get',ps:'got',pp:'gotten',cat:'Semi-Regular'},
+    {p:'give',ps:'gave',pp:'given',cat:'Semi-Regular'},
+    {p:'run',ps:'ran',pp:'run',cat:'Semi-Regular'},
+    {p:'come',ps:'came',pp:'come',cat:'Semi-Regular'},
+    {p:'break',ps:'broke',pp:'broken',cat:'Semi-Regular'},
+    {p:'forget',ps:'forgot',pp:'forgotten',cat:'Semi-Regular'},
+    {p:'think',ps:'thought',pp:'thought',cat:'-ought'},
+    {p:'buy',ps:'bought',pp:'bought',cat:'-ought'},
+    {p:'catch',ps:'caught',pp:'caught',cat:'-ought'},
+    {p:'teach',ps:'taught',pp:'taught',cat:'-ought'},
+    {p:'bring',ps:'brought',pp:'brought',cat:'-ought'},
+    {p:'fight',ps:'fought',pp:'fought',cat:'-ought'},
+    {p:'feel',ps:'felt',pp:'felt',cat:'Wanna-Be'},
+    {p:'keep',ps:'kept',pp:'kept',cat:'Wanna-Be'},
+    {p:'build',ps:'built',pp:'built',cat:'Wanna-Be'},
+    {p:'lose',ps:'lost',pp:'lost',cat:'Wanna-Be'},
+  ],
+  questionTypes:['yesno','choice','write','wrongright'], knownCats:['Regular','Semi-Regular','-ought'],
+},
+
+// ─── LEVEL 9: WANNA-BE REGULAR ───
+{
+  id:9, name:"WANNA-BE REGULARS",
+  rule:"These verbs tried to follow the rules — almost made it.\nSome trimmed -ED to -T.\nSome shifted the vowel slightly.\nread-read-read: spelling stays, pronunciation shifts.\nshow-showed-shown: past is regular, participle sneaks in a -N.",
+  examples:[['make','made','made'],['show','showed','shown'],['read','read','read'],['find','found','found'],['say','said','said']],
+  verbs:[
+    {p:'make',ps:'made',pp:'made',cat:'Wanna-Be'},
+    {p:'show',ps:'showed',pp:'shown',cat:'Wanna-Be'},
+    {p:'say',ps:'said',pp:'said',cat:'Wanna-Be'},
+    {p:'have',ps:'had',pp:'had',cat:'Wanna-Be'},
+    {p:'read',ps:'read',pp:'read',cat:'Wanna-Be'},
+    {p:'find',ps:'found',pp:'found',cat:'Wanna-Be'},
+    {p:'hear',ps:'heard',pp:'heard',cat:'Wanna-Be'},
+    {p:'hold',ps:'held',pp:'held',cat:'Wanna-Be'},
+    {p:'tell',ps:'told',pp:'told',cat:'Wanna-Be'},
+    {p:'sell',ps:'sold',pp:'sold',cat:'Wanna-Be'},
+    {p:'pay',ps:'paid',pp:'paid',cat:'Wanna-Be'},
+    {p:'lay',ps:'laid',pp:'laid',cat:'Wanna-Be'},
+    {p:'lead',ps:'led',pp:'led',cat:'Wanna-Be'},
+    {p:'feed',ps:'fed',pp:'fed',cat:'Wanna-Be'},
+    {p:'meet',ps:'met',pp:'met',cat:'Wanna-Be'},
+    {p:'feel',ps:'felt',pp:'felt',cat:'Wanna-Be'},
+    {p:'keep',ps:'kept',pp:'kept',cat:'Wanna-Be'},
+    {p:'sleep',ps:'slept',pp:'slept',cat:'Wanna-Be'},
+    {p:'leave',ps:'left',pp:'left',cat:'Wanna-Be'},
+    {p:'build',ps:'built',pp:'built',cat:'Wanna-Be'},
+    {p:'send',ps:'sent',pp:'sent',cat:'Wanna-Be'},
+    {p:'spend',ps:'spent',pp:'spent',cat:'Wanna-Be'},
+    {p:'lend',ps:'lent',pp:'lent',cat:'Wanna-Be'},
+    {p:'bend',ps:'bent',pp:'bent',cat:'Wanna-Be'},
+    {p:'stand',ps:'stood',pp:'stood',cat:'Wanna-Be'},
+    {p:'understand',ps:'understood',pp:'understood',cat:'Wanna-Be'},
+    {p:'bind',ps:'bound',pp:'bound',cat:'Wanna-Be'},
+    {p:'find',ps:'found',pp:'found',cat:'Wanna-Be'},
+    {p:'wind',ps:'wound',pp:'wound',cat:'Wanna-Be'},
+    {p:'deal',ps:'dealt',pp:'dealt',cat:'Wanna-Be'},
+    {p:'dream',ps:'dreamt',pp:'dreamt',cat:'Wanna-Be'},
+    {p:'mean',ps:'meant',pp:'meant',cat:'Wanna-Be'},
+    {p:'learn',ps:'learnt',pp:'learnt',cat:'Wanna-Be'},
+    {p:'burn',ps:'burnt',pp:'burnt',cat:'Wanna-Be'},
+  ],
+  questionTypes:['yesno','choice','write'], knownCats:['Wanna-Be'],
+},
+
+// ─── LEVEL 10: WANNA-BE AGAIN ───
+{
+  id:10, name:"WANNA-BE REGULARS — AGAIN",
+  rule:"These verbs tried to follow the rules — almost made it.\nSome trimmed -ED to -T.\nSome shifted the vowel slightly.\nshow-showed-shown: past is regular, participle adds -N.",
+  examples:[['hold','held','held'],['send','sent','sent'],['stand','stood','stood'],['dream','dreamt','dreamt']],
+  verbs:[
+    {p:'make',ps:'made',pp:'made',cat:'Wanna-Be'},
+    {p:'show',ps:'showed',pp:'shown',cat:'Wanna-Be'},
+    {p:'say',ps:'said',pp:'said',cat:'Wanna-Be'},
+    {p:'have',ps:'had',pp:'had',cat:'Wanna-Be'},
+    {p:'read',ps:'read',pp:'read',cat:'Wanna-Be'},
+    {p:'find',ps:'found',pp:'found',cat:'Wanna-Be'},
+    {p:'hear',ps:'heard',pp:'heard',cat:'Wanna-Be'},
+    {p:'hold',ps:'held',pp:'held',cat:'Wanna-Be'},
+    {p:'tell',ps:'told',pp:'told',cat:'Wanna-Be'},
+    {p:'sell',ps:'sold',pp:'sold',cat:'Wanna-Be'},
+    {p:'pay',ps:'paid',pp:'paid',cat:'Wanna-Be'},
+    {p:'lead',ps:'led',pp:'led',cat:'Wanna-Be'},
+    {p:'feed',ps:'fed',pp:'fed',cat:'Wanna-Be'},
+    {p:'meet',ps:'met',pp:'met',cat:'Wanna-Be'},
+    {p:'keep',ps:'kept',pp:'kept',cat:'Wanna-Be'},
+    {p:'sleep',ps:'slept',pp:'slept',cat:'Wanna-Be'},
+    {p:'leave',ps:'left',pp:'left',cat:'Wanna-Be'},
+    {p:'build',ps:'built',pp:'built',cat:'Wanna-Be'},
+    {p:'send',ps:'sent',pp:'sent',cat:'Wanna-Be'},
+    {p:'spend',ps:'spent',pp:'spent',cat:'Wanna-Be'},
+    {p:'lend',ps:'lent',pp:'lent',cat:'Wanna-Be'},
+    {p:'stand',ps:'stood',pp:'stood',cat:'Wanna-Be'},
+    {p:'understand',ps:'understood',pp:'understood',cat:'Wanna-Be'},
+    {p:'wind',ps:'wound',pp:'wound',cat:'Wanna-Be'},
+    {p:'deal',ps:'dealt',pp:'dealt',cat:'Wanna-Be'},
+    {p:'dream',ps:'dreamt',pp:'dreamt',cat:'Wanna-Be'},
+    {p:'mean',ps:'meant',pp:'meant',cat:'Wanna-Be'},
+    {p:'learn',ps:'learnt',pp:'learnt',cat:'Wanna-Be'},
+    {p:'burn',ps:'burnt',pp:'burnt',cat:'Wanna-Be'},
+    {p:'bend',ps:'bent',pp:'bent',cat:'Wanna-Be'},
+  ],
+  questionTypes:['yesno','choice','write','wrongright'], knownCats:['Wanna-Be'],
+},
+
+// ─── LEVEL 11: MIX -OUGHT + WANNA-BE ───
+{
+  id:11, name:"-OUGHT + WANNA-BE MIX",
+  rule:"-Ought: vowel crushed, ends in -GHT or similar.\nWanna-Be: trimmed -ED to -T or shifted vowel.\nBoth types freeze the same in past and participle.",
+  examples:[['fight','fought','fought'],['make','made','made'],['teach','taught','taught'],['leave','left','left']],
+  verbs:[
+    {p:'think',ps:'thought',pp:'thought',cat:'-ought'},
+    {p:'buy',ps:'bought',pp:'bought',cat:'-ought'},
+    {p:'catch',ps:'caught',pp:'caught',cat:'-ought'},
+    {p:'teach',ps:'taught',pp:'taught',cat:'-ought'},
+    {p:'bring',ps:'brought',pp:'brought',cat:'-ought'},
+    {p:'fight',ps:'fought',pp:'fought',cat:'-ought'},
+    {p:'shoot',ps:'shot',pp:'shot',cat:'Wanna-Be'},
+    {p:'seek',ps:'sought',pp:'sought',cat:'-ought'},
+    {p:'burn',ps:'burnt',pp:'burnt',cat:'Wanna-Be'},
+    {p:'lose',ps:'lost',pp:'lost',cat:'Wanna-Be'},
+    {p:'make',ps:'made',pp:'made',cat:'Wanna-Be'},
+    {p:'show',ps:'showed',pp:'shown',cat:'Wanna-Be'},
+    {p:'say',ps:'said',pp:'said',cat:'Wanna-Be'},
+    {p:'have',ps:'had',pp:'had',cat:'Wanna-Be'},
+    {p:'find',ps:'found',pp:'found',cat:'Wanna-Be'},
+    {p:'hold',ps:'held',pp:'held',cat:'Wanna-Be'},
+    {p:'tell',ps:'told',pp:'told',cat:'Wanna-Be'},
+    {p:'pay',ps:'paid',pp:'paid',cat:'Wanna-Be'},
+    {p:'lead',ps:'led',pp:'led',cat:'Wanna-Be'},
+    {p:'leave',ps:'left',pp:'left',cat:'Wanna-Be'},
+    {p:'send',ps:'sent',pp:'sent',cat:'Wanna-Be'},
+    {p:'build',ps:'built',pp:'built',cat:'Wanna-Be'},
+    {p:'keep',ps:'kept',pp:'kept',cat:'Wanna-Be'},
+    {p:'feel',ps:'felt',pp:'felt',cat:'Wanna-Be'},
+    {p:'stand',ps:'stood',pp:'stood',cat:'Wanna-Be'},
+    {p:'mean',ps:'meant',pp:'meant',cat:'Wanna-Be'},
+    {p:'deal',ps:'dealt',pp:'dealt',cat:'Wanna-Be'},
+    {p:'sleep',ps:'slept',pp:'slept',cat:'Wanna-Be'},
+    {p:'spend',ps:'spent',pp:'spent',cat:'Wanna-Be'},
+    {p:'read',ps:'read',pp:'read',cat:'Wanna-Be'},
+  ],
+  questionTypes:['yesno','choice','write','wrongright'], knownCats:['-ought','Wanna-Be'],
+},
+
+// ─── LEVEL 12: MIX REGULAR + SEMI-REGULAR ───
+{
+  id:12, name:"REGULAR + SEMI-REGULAR MIX",
+  rule:"Regular: add -ED or -D, both forms identical.\nSemi-regular: vowel shifts, participle adds -N or -EN.\nKeep them straight!",
+  examples:[['try','tried','tried'],['know','knew','known'],['visit','visited','visited'],['fall','fell','fallen']],
+  verbs:[
+    {p:'explain',ps:'explained',pp:'explained',cat:'Regular'},
+    {p:'create',ps:'created',pp:'created',cat:'Regular'},
+    {p:'develop',ps:'developed',pp:'developed',cat:'Regular'},
+    {p:'consider',ps:'considered',pp:'considered',cat:'Regular'},
+    {p:'include',ps:'included',pp:'included',cat:'Regular'},
+    {p:'improve',ps:'improved',pp:'improved',cat:'Regular'},
+    {p:'suggest',ps:'suggested',pp:'suggested',cat:'Regular'},
+    {p:'allow',ps:'allowed',pp:'allowed',cat:'Regular'},
+    {p:'remain',ps:'remained',pp:'remained',cat:'Regular'},
+    {p:'appear',ps:'appeared',pp:'appeared',cat:'Regular'},
+    {p:'prepare',ps:'prepared',pp:'prepared',cat:'Regular'},
+    {p:'protect',ps:'protected',pp:'protected',cat:'Regular'},
+    {p:'report',ps:'reported',pp:'reported',cat:'Regular'},
+    {p:'respond',ps:'responded',pp:'responded',cat:'Regular'},
+    {p:'collect',ps:'collected',pp:'collected',cat:'Regular'},
+    {p:'know',ps:'knew',pp:'known',cat:'Semi-Regular'},
+    {p:'fly',ps:'flew',pp:'flown',cat:'Semi-Regular'},
+    {p:'fall',ps:'fell',pp:'fallen',cat:'Semi-Regular'},
+    {p:'eat',ps:'ate',pp:'eaten',cat:'Semi-Regular'},
+    {p:'take',ps:'took',pp:'taken',cat:'Semi-Regular'},
+    {p:'wake',ps:'woke',pp:'woken',cat:'Semi-Regular'},
+    {p:'steal',ps:'stole',pp:'stolen',cat:'Semi-Regular'},
+    {p:'shake',ps:'shook',pp:'shaken',cat:'Semi-Regular'},
+    {p:'ride',ps:'rode',pp:'ridden',cat:'Semi-Regular'},
+    {p:'drive',ps:'drove',pp:'driven',cat:'Semi-Regular'},
+    {p:'bite',ps:'bit',pp:'bitten',cat:'Semi-Regular'},
+    {p:'rise',ps:'rose',pp:'risen',cat:'Semi-Regular'},
+    {p:'wear',ps:'wore',pp:'worn',cat:'Semi-Regular'},
+    {p:'draw',ps:'drew',pp:'drawn',cat:'Semi-Regular'},
+    {p:'blow',ps:'blew',pp:'blown',cat:'Semi-Regular'},
+  ],
+  questionTypes:['yesno','choice','write','wrongright'], knownCats:['Regular','Semi-Regular'],
+},
+
+// ─── LEVEL 13: MIX REG + SEMI + -OUGHT + WANNA-BE ───
+{
+  id:13, name:"REGULAR + SEMI + -OUGHT + WANNA-BE",
+  rule:"Four types in the mix.\nRegular: -ED. Semi: vowel + -N.\n-Ought: crushed vowel + -GHT.\nWanna-Be: close, but not quite regular.",
+  examples:[['work','worked','worked'],['speak','spoke','spoken'],['think','thought','thought'],['find','found','found']],
+  verbs:[
+    {p:'work',ps:'worked',pp:'worked',cat:'Regular'},
+    {p:'play',ps:'played',pp:'played',cat:'Regular'},
+    {p:'change',ps:'changed',pp:'changed',cat:'Regular'},
+    {p:'finish',ps:'finished',pp:'finished',cat:'Regular'},
+    {p:'help',ps:'helped',pp:'helped',cat:'Regular'},
+    {p:'enjoy',ps:'enjoyed',pp:'enjoyed',cat:'Regular'},
+    {p:'decide',ps:'decided',pp:'decided',cat:'Regular'},
+    {p:'learn',ps:'learned',pp:'learned',cat:'Regular'},
+    {p:'speak',ps:'spoke',pp:'spoken',cat:'Semi-Regular'},
+    {p:'write',ps:'wrote',pp:'written',cat:'Semi-Regular'},
+    {p:'see',ps:'saw',pp:'seen',cat:'Semi-Regular'},
+    {p:'give',ps:'gave',pp:'given',cat:'Semi-Regular'},
+    {p:'run',ps:'ran',pp:'run',cat:'Semi-Regular'},
+    {p:'come',ps:'came',pp:'come',cat:'Semi-Regular'},
+    {p:'grow',ps:'grew',pp:'grown',cat:'Semi-Regular'},
+    {p:'break',ps:'broke',pp:'broken',cat:'Semi-Regular'},
+    {p:'think',ps:'thought',pp:'thought',cat:'-ought'},
+    {p:'buy',ps:'bought',pp:'bought',cat:'-ought'},
+    {p:'bring',ps:'brought',pp:'brought',cat:'-ought'},
+    {p:'teach',ps:'taught',pp:'taught',cat:'-ought'},
+    {p:'catch',ps:'caught',pp:'caught',cat:'-ought'},
+    {p:'fight',ps:'fought',pp:'fought',cat:'-ought'},
+    {p:'lose',ps:'lost',pp:'lost',cat:'Wanna-Be'},
+    {p:'keep',ps:'kept',pp:'kept',cat:'Wanna-Be'},
+    {p:'make',ps:'made',pp:'made',cat:'Wanna-Be'},
+    {p:'say',ps:'said',pp:'said',cat:'Wanna-Be'},
+    {p:'find',ps:'found',pp:'found',cat:'Wanna-Be'},
+    {p:'tell',ps:'told',pp:'told',cat:'Wanna-Be'},
+    {p:'have',ps:'had',pp:'had',cat:'Wanna-Be'},
+    {p:'show',ps:'showed',pp:'shown',cat:'Wanna-Be'},
+    {p:'read',ps:'read',pp:'read',cat:'Wanna-Be'},
+    {p:'leave',ps:'left',pp:'left',cat:'Wanna-Be'},
+    {p:'stand',ps:'stood',pp:'stood',cat:'Wanna-Be'},
+    {p:'send',ps:'sent',pp:'sent',cat:'Wanna-Be'},
+    {p:'pay',ps:'paid',pp:'paid',cat:'Wanna-Be'},
+  ],
+  questionTypes:['yesno','choice','write','wrongright'], knownCats:['Regular','Semi-Regular','-ought','Wanna-Be'],
+},
+
+// ─── LEVEL 14: REPEATERS ───
+{
+  id:14, name:"REPEATERS",
+  rule:"These verbs never change at all.\nPresent, past simple, and past participle are identical.\nThey were strong verbs whose vowel happened not to shift.",
+  examples:[['hit','hit','hit'],['cut','cut','cut'],['put','put','put'],['let','let','let']],
+  verbs:[
+    {p:'hit',ps:'hit',pp:'hit',cat:'Repeater'},
+    {p:'cut',ps:'cut',pp:'cut',cat:'Repeater'},
+    {p:'put',ps:'put',pp:'put',cat:'Repeater'},
+    {p:'let',ps:'let',pp:'let',cat:'Repeater'},
+    {p:'set',ps:'set',pp:'set',cat:'Repeater'},
+    {p:'hurt',ps:'hurt',pp:'hurt',cat:'Repeater'},
+    {p:'cost',ps:'cost',pp:'cost',cat:'Repeater'},
+    {p:'spread',ps:'spread',pp:'spread',cat:'Repeater'},
+    {p:'split',ps:'split',pp:'split',cat:'Repeater'},
+    {p:'quit',ps:'quit',pp:'quit',cat:'Repeater'},
+    {p:'fit',ps:'fit',pp:'fit',cat:'Repeater'},
+    {p:'shut',ps:'shut',pp:'shut',cat:'Repeater'},
+    {p:'beat',ps:'beat',pp:'beat',cat:'Repeater'},
+  ],
+  questionTypes:['yesno','choice','write'], knownCats:['Repeater'],
+},
+
+// ─── LEVEL 15: REPEATERS AGAIN ───
+{
+  id:15, name:"REPEATERS — AGAIN",
+  rule:"These verbs never change at all.\nPresent, past simple, and past participle are identical.\nThey were strong verbs whose vowel happened not to shift.",
+  examples:[['set','set','set'],['hurt','hurt','hurt'],['cost','cost','cost'],['spread','spread','spread']],
+  verbs:[
+    {p:'hit',ps:'hit',pp:'hit',cat:'Repeater'},
+    {p:'cut',ps:'cut',pp:'cut',cat:'Repeater'},
+    {p:'put',ps:'put',pp:'put',cat:'Repeater'},
+    {p:'let',ps:'let',pp:'let',cat:'Repeater'},
+    {p:'set',ps:'set',pp:'set',cat:'Repeater'},
+    {p:'hurt',ps:'hurt',pp:'hurt',cat:'Repeater'},
+    {p:'cost',ps:'cost',pp:'cost',cat:'Repeater'},
+    {p:'spread',ps:'spread',pp:'spread',cat:'Repeater'},
+    {p:'split',ps:'split',pp:'split',cat:'Repeater'},
+    {p:'quit',ps:'quit',pp:'quit',cat:'Repeater'},
+    {p:'fit',ps:'fit',pp:'fit',cat:'Repeater'},
+    {p:'shut',ps:'shut',pp:'shut',cat:'Repeater'},
+    {p:'beat',ps:'beat',pp:'beat',cat:'Repeater'},
+  ],
+  questionTypes:['yesno','choice','write','wrongright'], knownCats:['Repeater'],
+},
+
+// ─── LEVEL 16: MIX ALL EXCEPT IRREGULARS ───
+{
+  id:16, name:"REPEATERS + ALL PREVIOUS",
+  rule:"All five types: Regular, Semi-Regular, -Ought, Wanna-Be, Repeater.\nEach one plays by slightly different rules.\nStay sharp.",
+  examples:[['work','worked','worked'],['speak','spoke','spoken'],['think','thought','thought'],['find','found','found'],['hit','hit','hit']],
+  verbs:[
+    {p:'work',ps:'worked',pp:'worked',cat:'Regular'},
+    {p:'change',ps:'changed',pp:'changed',cat:'Regular'},
+    {p:'finish',ps:'finished',pp:'finished',cat:'Regular'},
+    {p:'learn',ps:'learned',pp:'learned',cat:'Regular'},
+    {p:'enjoy',ps:'enjoyed',pp:'enjoyed',cat:'Regular'},
+    {p:'speak',ps:'spoke',pp:'spoken',cat:'Semi-Regular'},
+    {p:'write',ps:'wrote',pp:'written',cat:'Semi-Regular'},
+    {p:'grow',ps:'grew',pp:'grown',cat:'Semi-Regular'},
+    {p:'see',ps:'saw',pp:'seen',cat:'Semi-Regular'},
+    {p:'run',ps:'ran',pp:'run',cat:'Semi-Regular'},
+    {p:'come',ps:'came',pp:'come',cat:'Semi-Regular'},
+    {p:'give',ps:'gave',pp:'given',cat:'Semi-Regular'},
+    {p:'think',ps:'thought',pp:'thought',cat:'-ought'},
+    {p:'bring',ps:'brought',pp:'brought',cat:'-ought'},
+    {p:'teach',ps:'taught',pp:'taught',cat:'-ought'},
+    {p:'catch',ps:'caught',pp:'caught',cat:'-ought'},
+    {p:'fight',ps:'fought',pp:'fought',cat:'-ought'},
+    {p:'lose',ps:'lost',pp:'lost',cat:'Wanna-Be'},
+    {p:'make',ps:'made',pp:'made',cat:'Wanna-Be'},
+    {p:'say',ps:'said',pp:'said',cat:'Wanna-Be'},
+    {p:'find',ps:'found',pp:'found',cat:'Wanna-Be'},
+    {p:'have',ps:'had',pp:'had',cat:'Wanna-Be'},
+    {p:'tell',ps:'told',pp:'told',cat:'Wanna-Be'},
+    {p:'show',ps:'showed',pp:'shown',cat:'Wanna-Be'},
+    {p:'leave',ps:'left',pp:'left',cat:'Wanna-Be'},
+    {p:'stand',ps:'stood',pp:'stood',cat:'Wanna-Be'},
+    {p:'send',ps:'sent',pp:'sent',cat:'Wanna-Be'},
+    {p:'read',ps:'read',pp:'read',cat:'Wanna-Be'},
+    {p:'hit',ps:'hit',pp:'hit',cat:'Repeater'},
+    {p:'cut',ps:'cut',pp:'cut',cat:'Repeater'},
+    {p:'put',ps:'put',pp:'put',cat:'Repeater'},
+    {p:'let',ps:'let',pp:'let',cat:'Repeater'},
+    {p:'set',ps:'set',pp:'set',cat:'Repeater'},
+    {p:'hurt',ps:'hurt',pp:'hurt',cat:'Repeater'},
+    {p:'cost',ps:'cost',pp:'cost',cat:'Repeater'},
+    {p:'spread',ps:'spread',pp:'spread',cat:'Repeater'},
+    {p:'shut',ps:'shut',pp:'shut',cat:'Repeater'},
+    {p:'split',ps:'split',pp:'split',cat:'Repeater'},
+  ],
+  questionTypes:['yesno','choice','write','wrongright'], knownCats:['Regular','Semi-Regular','-ought','Wanna-Be','Repeater'],
+},
+
+// ─── LEVEL 17: TRUE IRREGULARS ───
+{
+  id:17, name:"TRUE IRREGULARS",
+  rule:"Not just irregular — built from different historical verbs.\n'went' came from 'to wend', a completely different verb.\n'be' is assembled from three separate ancient roots.\nThese are ruins of older systems, still standing.",
+  examples:[['go','went','gone'],['be / is / are','was / were','been'],['do','did','done']],
+  verbs:[
+    {p:'go',ps:'went',pp:'gone',cat:'Irregular'},
+    {p:'be',ps:'was/were',pp:'been',cat:'Irregular'},
+    {p:'do',ps:'did',pp:'done',cat:'Irregular'},
+  ],
+  questionTypes:['yesno','choice','write'], knownCats:['Irregular'],
+},
+
+// ─── LEVEL 18: TRUE IRREGULARS AGAIN ───
+{
+  id:18, name:"TRUE IRREGULARS — AGAIN",
+  rule:"Not just irregular — built from different historical verbs.\n'went' came from 'to wend', a completely different verb.\n'be' is assembled from three separate ancient roots.\nThese are ruins of older systems, still standing.",
+  examples:[['go','went','gone'],['be / is / are','was / were','been'],['do','did','done']],
+  verbs:[
+    {p:'go',ps:'went',pp:'gone',cat:'Irregular'},
+    {p:'be',ps:'was/were',pp:'been',cat:'Irregular'},
+    {p:'do',ps:'did',pp:'done',cat:'Irregular'},
+  ],
+  questionTypes:['yesno','choice','write','wrongright'], knownCats:['Irregular'],
+},
+
+// ─── LEVEL 19+: ALL TYPES ───
+{
+  id:19, name:"ALL TYPES",
+  rule:"Every verb type in one arena.\nRegular, Semi-Regular, -Ought, Wanna-Be, Repeater, True Irregular.\nNo hints. No mercy.",
+  examples:[['work','worked','worked'],['speak','spoke','spoken'],['fight','fought','fought'],['find','found','found'],['hit','hit','hit'],['go','went','gone']],
+  verbs:[
+    {p:'go',ps:'went',pp:'gone',cat:'Irregular'},
+    {p:'be',ps:'was/were',pp:'been',cat:'Irregular'},
+    {p:'do',ps:'did',pp:'done',cat:'Irregular'},
+    {p:'work',ps:'worked',pp:'worked',cat:'Regular'},
+    {p:'play',ps:'played',pp:'played',cat:'Regular'},
+    {p:'change',ps:'changed',pp:'changed',cat:'Regular'},
+    {p:'finish',ps:'finished',pp:'finished',cat:'Regular'},
+    {p:'learn',ps:'learned',pp:'learned',cat:'Regular'},
+    {p:'enjoy',ps:'enjoyed',pp:'enjoyed',cat:'Regular'},
+    {p:'explain',ps:'explained',pp:'explained',cat:'Regular'},
+    {p:'create',ps:'created',pp:'created',cat:'Regular'},
+    {p:'suggest',ps:'suggested',pp:'suggested',cat:'Regular'},
+    {p:'develop',ps:'developed',pp:'developed',cat:'Regular'},
+    {p:'speak',ps:'spoke',pp:'spoken',cat:'Semi-Regular'},
+    {p:'write',ps:'wrote',pp:'written',cat:'Semi-Regular'},
+    {p:'grow',ps:'grew',pp:'grown',cat:'Semi-Regular'},
+    {p:'see',ps:'saw',pp:'seen',cat:'Semi-Regular'},
+    {p:'give',ps:'gave',pp:'given',cat:'Semi-Regular'},
+    {p:'run',ps:'ran',pp:'run',cat:'Semi-Regular'},
+    {p:'come',ps:'came',pp:'come',cat:'Semi-Regular'},
+    {p:'break',ps:'broke',pp:'broken',cat:'Semi-Regular'},
+    {p:'fall',ps:'fell',pp:'fallen',cat:'Semi-Regular'},
+    {p:'take',ps:'took',pp:'taken',cat:'Semi-Regular'},
+    {p:'know',ps:'knew',pp:'known',cat:'Semi-Regular'},
+    {p:'fly',ps:'flew',pp:'flown',cat:'Semi-Regular'},
+    {p:'think',ps:'thought',pp:'thought',cat:'-ought'},
+    {p:'buy',ps:'bought',pp:'bought',cat:'-ought'},
+    {p:'bring',ps:'brought',pp:'brought',cat:'-ought'},
+    {p:'teach',ps:'taught',pp:'taught',cat:'-ought'},
+    {p:'catch',ps:'caught',pp:'caught',cat:'-ought'},
+    {p:'fight',ps:'fought',pp:'fought',cat:'-ought'},
+    {p:'lose',ps:'lost',pp:'lost',cat:'Wanna-Be'},
+    {p:'keep',ps:'kept',pp:'kept',cat:'Wanna-Be'},
+    {p:'build',ps:'built',pp:'built',cat:'Wanna-Be'},
+    {p:'make',ps:'made',pp:'made',cat:'Wanna-Be'},
+    {p:'say',ps:'said',pp:'said',cat:'Wanna-Be'},
+    {p:'find',ps:'found',pp:'found',cat:'Wanna-Be'},
+    {p:'have',ps:'had',pp:'had',cat:'Wanna-Be'},
+    {p:'tell',ps:'told',pp:'told',cat:'Wanna-Be'},
+    {p:'show',ps:'showed',pp:'shown',cat:'Wanna-Be'},
+    {p:'leave',ps:'left',pp:'left',cat:'Wanna-Be'},
+    {p:'stand',ps:'stood',pp:'stood',cat:'Wanna-Be'},
+    {p:'send',ps:'sent',pp:'sent',cat:'Wanna-Be'},
+    {p:'read',ps:'read',pp:'read',cat:'Wanna-Be'},
+    {p:'hear',ps:'heard',pp:'heard',cat:'Wanna-Be'},
+    {p:'hold',ps:'held',pp:'held',cat:'Wanna-Be'},
+    {p:'pay',ps:'paid',pp:'paid',cat:'Wanna-Be'},
+    {p:'mean',ps:'meant',pp:'meant',cat:'Wanna-Be'},
+    {p:'hit',ps:'hit',pp:'hit',cat:'Repeater'},
+    {p:'cut',ps:'cut',pp:'cut',cat:'Repeater'},
+    {p:'put',ps:'put',pp:'put',cat:'Repeater'},
+    {p:'let',ps:'let',pp:'let',cat:'Repeater'},
+    {p:'set',ps:'set',pp:'set',cat:'Repeater'},
+    {p:'hurt',ps:'hurt',pp:'hurt',cat:'Repeater'},
+    {p:'cost',ps:'cost',pp:'cost',cat:'Repeater'},
+    {p:'spread',ps:'spread',pp:'spread',cat:'Repeater'},
+    {p:'shut',ps:'shut',pp:'shut',cat:'Repeater'},
+    {p:'split',ps:'split',pp:'split',cat:'Repeater'},
+  ],
+  questionTypes:['yesno','choice','write','wrongright'], knownCats:['Regular','Semi-Regular','-ought','Wanna-Be','Repeater','Irregular'],
+},
+];
+
+// ══════════════════════════════════════
+//  TITLE STARS — very sparse
+// ══════════════════════════════════════
+const titleCanvas = document.getElementById('titleCanvas');
+const tCtx = titleCanvas.getContext('2d');
+const tStars = [];
+
+function initTitleStars() {
+  titleCanvas.width = window.innerWidth;
+  titleCanvas.height = window.innerHeight;
+  tStars.length = 0;
+  const cols = ['#ffffff','#aaddff','#ffeebb','#ccddff','#ffffff','#ffffff'];
+  for (let i = 0; i < 55; i++) {
+    tStars.push({
+      x: Math.random() * titleCanvas.width,
+      y: Math.random() * titleCanvas.height,
+      s: Math.random() < 0.75 ? 1 : 2,
+      bright: 0.3 + Math.random() * 0.7,
+      col: cols[Math.floor(Math.random()*cols.length)],
+    });
+  }
+}
+function drawTitleStars() {
+  tCtx.clearRect(0, 0, titleCanvas.width, titleCanvas.height);
+  for (const s of tStars) {
+    tCtx.fillStyle = s.col;
+    tCtx.globalAlpha = s.bright;
+    tCtx.fillRect(s.x, s.y, s.s, s.s);
+  }
+  tCtx.globalAlpha = 1;
+  requestAnimationFrame(drawTitleStars);
+}
+initTitleStars(); drawTitleStars();
+window.addEventListener('resize', initTitleStars);
+
+// ══════════════════════════════════════
+//  GAME CANVAS — portrait letterbox
+// ══════════════════════════════════════
+const gc = document.getElementById('gameCanvas');
+const gCtx = gc.getContext('2d');
+let GW, GH; // game canvas dimensions
+
+function setupCanvas() {
+  // Portrait phone-sized play area
+  const maxW = Math.min(window.innerWidth, 420);
+  const maxH = window.innerHeight;
+  GW = maxW;
+  GH = maxH;
+  gc.width = GW;
+  gc.height = GH;
+  gc.style.width = GW + 'px';
+  gc.style.height = GH + 'px';
+}
+
+// ══════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════
+let curLevel = 0;
+let playCount = 0;
+let shownTitleCards = new Set(); // track which levels have already shown their title card
+let lives = 3;
+let meters = 0;
+let gameRunning = false;
+let animId = null;
+let hyperspeed = false;
+let hyperspeedTimer = 0;
+let qAnswered = false;
+let qContext = '';
+let totalCorrect = 0;
+let totalAsked = 0;
+let streak = 0;
+let levelCorrect = 0; // correct in current level session
+let levelAsked = 0;   // answers in current level session
+const LEVEL_MIN_ASKED = 10;
+const LEVEL_MAX_ASKED = 20;
+const LEVEL_PASS_PCT  = 0.70;
+let frameCount = 0;
+
+// Ship — only moves horizontally, fixed near bottom
+const ship = { x: 0, y: 0, r: 22, targetX: 0, dragging: false, touchId: null };
+
+// World scroll offset — camera scrolls up
+let scrollY = 0;
+const SCROLL_SPEED = 2.5; // pixels per frame the world moves down (ship appears to go up)
+
+// Lane system — enemies live on lanes
+// Lanes are world-Y positions that scroll into view
+let lanes = [];        // { worldY, type, data, active }
+let boosts = [];       // { worldY, x, phase, waveOffset }
+let sparks = [];
+let spawnWorldY = 0;   // next world Y to place a lane at (above current view)
+let lastLaneY = 0;
+
+// ══════════════════════════════════════
+//  SCREEN MANAGER
+// ══════════════════════════════════════
+function setScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+}
+
+// ══════════════════════════════════════
+//  LESSON
+// ══════════════════════════════════════
+function showLesson(idx) {
+  curLevel = idx;
+  const lv = LEVELS[idx];
+  if (lv.noVerbs) { startGame(idx); return; }
+
+  document.getElementById('lsTitle').textContent = `LEVEL ${lv.id}: ${lv.name}`;
+  document.getElementById('lsRule').innerHTML = lv.rule.replace(/\n/g,'<br>');
+
+  const tbl = document.getElementById('lsTable');
+  tbl.innerHTML = '';
+  if (lv.examples.length > 0) {
+    const thead = document.createElement('tr');
+    ['PRESENT','PAST SIMPLE','PAST PARTICIPLE'].forEach(h => {
+      const th = document.createElement('th'); th.textContent = h; thead.appendChild(th);
+    });
+    tbl.appendChild(thead);
+    for (const [p,ps,pp] of lv.examples) {
+      const tr = document.createElement('tr');
+      [p,ps,pp].forEach(v => { const td = document.createElement('td'); td.textContent = v; tr.appendChild(td); });
+      tbl.appendChild(tr);
+    }
+  }
+  setScreen('lessonScreen');
+}
+
+document.getElementById('lessonPlayBtn').onclick = () => {
+  levelCorrect = 0; levelAsked = 0;
+  startGame(curLevel);
+};
+document.getElementById('startBtn').onclick = () => {
+  // Unlock AudioContext on first gesture (required on mobile)
+  try { getAudio().resume(); } catch(e) {}
+  curLevel = 0; showLesson(0);
+};
+
+// ══════════════════════════════════════
+//  START GAME
+// ══════════════════════════════════════
+function startGame(idx) {
+  curLevel = idx;
+  playCount++;
+  lives = 3; meters = 0; frameCount = 0;
+  hyperspeed = false; hyperspeedTimer = 0;
+  totalCorrect = 0; totalAsked = 0; streak = 0;
+  levelCorrect = 0; levelAsked = 0;
+  lanes = []; boosts = []; sparks = [];
+  scrollY = 0;
+
+  setupCanvas();
+  // Init background stars
+  bgStars = [];
+  const starColors = ['#ffffff','#ffffff','#aaddff','#ffeebb','#ccddff'];
+  for (let i = 0; i < 55; i++) {
+    bgStars.push({
+      x: Math.random() * GW,
+      y: Math.random() * GH,
+      s: Math.random() < 0.7 ? 1 : 2,
+      spd: 0.5 + Math.random() * 1.2,
+      bright: 0.4 + Math.random() * 0.6,
+      color: starColors[Math.floor(Math.random()*starColors.length)],
+    });
+  }
+  ship.x = GW / 2;
+  ship.targetX = GW / 2;
+  ship.y = GH - 100; // fixed near bottom
+
+  // Pre-seed lanes ahead
+  spawnWorldY = -GH; // start spawning above screen
+  lastLaneY = 0;
+  preSeedLanes();
+
+  setScreen('gameScreen');
+  gameRunning = true;
+  if (animId) cancelAnimationFrame(animId);
+  startBgMusic();
+  gameLoop();
+}
+
+function preSeedLanes() {
+  // Fill two screens worth of lanes above
+  for (let i = 0; i < 12; i++) {
+    trySpawnLane();
+  }
+}
+
+// ══════════════════════════════════════
+//  TOUCH — horizontal drag only
+// ══════════════════════════════════════
+function getCanvasX(clientX) {
+  const rect = gc.getBoundingClientRect();
+  return clientX - rect.left;
+}
+
+gc.addEventListener('touchstart', e => {
+  e.preventDefault();
+  const t = e.changedTouches[0];
+  ship.dragging = true;
+  ship.touchId = t.identifier;
+  ship.targetX = Math.max(ship.r, Math.min(GW - ship.r, getCanvasX(t.clientX)));
+}, { passive: false });
+
+gc.addEventListener('touchmove', e => {
+  e.preventDefault();
+  for (const t of e.changedTouches) {
+    if (t.identifier === ship.touchId) {
+      ship.targetX = Math.max(ship.r, Math.min(GW - ship.r, getCanvasX(t.clientX)));
+    }
+  }
+}, { passive: false });
+
+gc.addEventListener('touchend', e => {
+  for (const t of e.changedTouches) if (t.identifier === ship.touchId) ship.dragging = false;
+});
+
+gc.addEventListener('mousedown', e => {
+  ship.dragging = true;
+  ship.targetX = Math.max(ship.r, Math.min(GW - ship.r, getCanvasX(e.clientX)));
+});
+gc.addEventListener('mousemove', e => {
+  if (ship.dragging) ship.targetX = Math.max(ship.r, Math.min(GW - ship.r, getCanvasX(e.clientX)));
+});
+gc.addEventListener('mouseup', () => ship.dragging = false);
+
+// ══════════════════════════════════════
+//  PROGRESS
+// ══════════════════════════════════════
+function prog() { return Math.min(1, meters / 3000); }
+
+// ══════════════════════════════════════
+//  LANE SPAWNING
+// ══════════════════════════════════════
+const LANE_GAP_MIN = 55;
+const LANE_GAP_MAX = 95;
+
+function trySpawnLane() {
+  const gap = LANE_GAP_MIN + Math.random() * (LANE_GAP_MAX - LANE_GAP_MIN);
+  spawnWorldY -= gap;
+
+  // Always spawn something — weight shifts with progress
+  const r = Math.random();
+  const bhW    = 0.16 + prog() * 0.20;   // 16% → 36%
+  const wireW  = 0.22 + prog() * 0.18;   // 22% → 40%
+  const rivalW = 0.26 + prog() * 0.20;   // 26% → 46%
+  const total  = bhW + wireW + rivalW;
+
+  let type;
+  if (r < bhW/total)              type = 'blackhole';
+  else if (r < (bhW+wireW)/total) type = 'wire';
+  else                            type = 'rival';
+
+  const lane = { worldY: spawnWorldY, type, active: true };
+
+  if (type === 'blackhole') {
+    // Place on left or right edge
+    const r2 = 16 + prog() * 10;
+    // can appear anywhere across the screen width
+    const margin = r2 + 6;
+    lane.data = {
+      x: margin + Math.random() * (GW - margin * 2),
+      r: r2,
+      ang: 0,
+    };
+  } else if (type === 'wire') {
+    // Wire starts from left OR right side, extends inward
+    const fromLeft = Math.random() < 0.5;
+    const wf = 0.25 + prog() * 0.50;
+    const wireW = GW * wf;
+    lane.data = {
+      fromLeft,
+      x: fromLeft ? 0 : GW - wireW,
+      w: wireW,
+      phase: 0,
+    };
+  } else if (type === 'rival') {
+    // Rival ship crosses horizontally
+    const goRight = Math.random() < 0.5;
+    const spd = 3.5 + prog() * 4.5;
+    lane.data = {
+      x: goRight ? -40 : GW + 40,
+      spd: goRight ? spd : -spd,
+      r: 22, // rival radius for collision
+    };
+  }
+
+  lanes.push(lane);
+}
+
+// Spawn boost — floats on its own worldY, weaves left-right
+function spawnBoost() {
+  boosts.push({
+    worldY: spawnWorldY - (Math.random() * 200 + 100),
+    x: GW * 0.5,
+    phase: Math.random() * Math.PI * 2,
+    waveAmp: GW * 0.28,
+    waveSpd: 0.03,
+    gleam: 0,
+  });
+}
+
+// ══════════════════════════════════════
+//  SPARKS
+// ══════════════════════════════════════
+function addSparks(x, y) {
+  for (let i = 0; i < 8; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const spd = 1.5 + Math.random() * 3;
+    sparks.push({ x, y, vx: Math.cos(a)*spd, vy: Math.sin(a)*spd, life: 18 });
+  }
+}
+
+// ══════════════════════════════════════
+//  UPDATE
+// ══════════════════════════════════════
+function update() {
+  frameCount++;
+
+  // Scroll background stars downward
+  for (const s of bgStars) {
+    s.y += s.spd * (hyperspeed ? 4 : 1);
+    if (s.y > GH) { s.y = 0; s.x = Math.random() * GW; }
+  }
+
+  const speed = hyperspeed ? SCROLL_SPEED * 3.5 : SCROLL_SPEED;
+  scrollY += speed;
+  meters += hyperspeed ? 4 : 1;
+
+  if (hyperspeed) {
+    hyperspeedTimer--;
+    if (hyperspeedTimer <= 0) { hyperspeed = false; }
+  }
+
+  // Smooth ship X movement
+  ship.x += (ship.targetX - ship.x) * 0.22;
+
+  // Animate lanes
+  for (const lane of lanes) {
+    if (!lane.active) continue;
+    if (lane.type === 'blackhole') lane.data.ang += 0.04;
+    if (lane.type === 'wire')      lane.data.phase += 0.14;
+    if (lane.type === 'rival')     lane.data.x += lane.data.spd * (hyperspeed ? 0 : 1);
+  }
+
+  // Boost wave
+  for (const b of boosts) {
+    b.phase += b.waveSpd;
+    b.x = GW/2 + Math.sin(b.phase) * b.waveAmp;
+    b.gleam += 0.1;
+  }
+
+  // Sparks
+  for (let i = sparks.length-1; i>=0; i--) {
+    sparks[i].x += sparks[i].vx;
+    sparks[i].y += sparks[i].vy;
+    sparks[i].life--;
+    if (sparks[i].life<=0) sparks.splice(i,1);
+  }
+
+  // Spawn new lanes as we scroll
+  // spawnWorldY tracks world coords; we need to keep spawning when the leading edge is still ahead
+  const worldTop = -scrollY; // world Y that corresponds to screen top
+  while (spawnWorldY > worldTop - GH) {
+    trySpawnLane();
+    if (Math.random() < 0.15 + prog() * 0.1) spawnBoost();
+  }
+
+  // Remove lanes that have scrolled off screen bottom
+  const worldBottom = -scrollY + GH + 200;
+  for (let i = lanes.length-1; i>=0; i--) {
+    if (lanes[i].worldY > worldBottom) lanes.splice(i,1);
+  }
+  for (let i = boosts.length-1; i>=0; i--) {
+    if (boosts[i].worldY > worldBottom) boosts.splice(i,1);
+  }
+
+  if (hyperspeed) return;
+
+  // ── COLLISION ──
+  // Convert ship to world coords for collision
+  const shipWorldY = ship.y - scrollY; // ship's world Y
+
+  for (const lane of lanes) {
+    if (!lane.active) continue;
+    const screenY = lane.worldY + scrollY; // screen Y of this lane
+
+    if (lane.type === 'blackhole') {
+      const d = lane.data;
+      const dx = ship.x - d.x;
+      const dy = (ship.y) - screenY;
+      if (Math.sqrt(dx*dx+dy*dy) < ship.r + d.r * 0.45) {
+        lane.active = false;
+        addSparks(ship.x, ship.y);
+        hitEnemy(); return;
+      }
+    }
+
+    if (lane.type === 'wire') {
+      const d = lane.data;
+      if (ship.x > d.x && ship.x < d.x + d.w && Math.abs(ship.y - screenY) < ship.r + 6) {
+        lane.active = false;
+        addSparks(ship.x, ship.y);
+        hitEnemy(); return;
+      }
+    }
+
+    if (lane.type === 'rival') {
+      const d = lane.data;
+      if (Math.abs(ship.x - d.x) < ship.r + d.r && Math.abs(ship.y - screenY) < ship.r + 18) {
+        lane.active = false;
+        addSparks(ship.x, ship.y);
+        hitEnemy(); return;
+      }
+    }
+  }
+
+  // Boost collision
+  for (let i = boosts.length-1; i>=0; i--) {
+    const b = boosts[i];
+    const bScreenY = b.worldY + scrollY;
+    const dx = ship.x - b.x, dy = ship.y - bScreenY;
+    if (Math.sqrt(dx*dx+dy*dy) < ship.r + 14) {
+      boosts.splice(i,1);
+      addSparks(ship.x, ship.y);
+      activateBoost(); return;
+    }
+  }
+}
+
+// ══════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════
+function render() {
+  gCtx.clearRect(0, 0, GW, GH);
+  // Deep space background
+  gCtx.fillStyle = '#0a0d2e';
+  gCtx.fillRect(0, 0, GW, GH);
+
+  // Background stars — white/pale
+  for (const s of bgStars) {
+    gCtx.globalAlpha = s.bright || 0.7;
+    gCtx.fillStyle = s.color || '#fff';
+    gCtx.fillRect(Math.floor(s.x), Math.floor(s.y), s.s, s.s);
+  }
+  gCtx.globalAlpha = 1;
+
+  // Hyperspeed lines — pink streaks
+  if (hyperspeed) {
+    gCtx.strokeStyle = 'rgba(255,100,220,0.18)';
+    gCtx.lineWidth = 2;
+    for (let i = 0; i < 12; i++) {
+      const y = ((i/12)*GH + frameCount*16) % GH;
+      gCtx.beginPath(); gCtx.moveTo(0,y); gCtx.lineTo(GW,y); gCtx.stroke();
+    }
+  }
+
+  // Draw each lane
+  for (const lane of lanes) {
+    if (!lane.active) continue;
+    const sy = lane.worldY + scrollY; // screen Y
+    if (sy < -80 || sy > GH + 80) continue; // off screen
+
+    if (lane.type === 'blackhole') drawBlackHole(lane.data, sy);
+    if (lane.type === 'wire')      drawWire(lane.data, sy);
+    if (lane.type === 'rival')     drawRival(lane.data, sy);
+  }
+
+  // Draw boosts
+  for (const b of boosts) {
+    const bsy = b.worldY + scrollY;
+    if (bsy < -30 || bsy > GH + 30) continue;
+    drawBoost(b, bsy);
+  }
+
+  // Sparks — bright orange/white debris
+  for (const s of sparks) {
+    gCtx.globalAlpha = s.life / 18;
+    gCtx.fillStyle = s.life > 12 ? '#fff' : '#ff8c00';
+    gCtx.fillRect(Math.floor(s.x-1), Math.floor(s.y-1), 3, 3);
+  }
+  gCtx.globalAlpha = 1;
+
+  // Ship
+  drawShip(ship.x, ship.y);
+
+  // HUD
+  drawHUD();
+}
+
+// ── BLACK HOLE — obscure void entity ──
+function drawBlackHole(d, sy) {
+  const cx = Math.floor(d.x);
+  const cy = Math.floor(sy);
+  const r  = Math.floor(d.r);
+  const p  = 3;
+
+  // Outer accretion glow — deep purple rings
+  for (let ring = 3; ring >= 1; ring--) {
+    const rr = r + ring * p;
+    const alpha = 0.12 + ring * 0.06;
+    gCtx.fillStyle = `rgba(120,0,200,${alpha})`;
+    for (let dy2 = -(rr+p); dy2 <= rr+p; dy2 += p) {
+      for (let dx2 = -(rr+p); dx2 <= rr+p; dx2 += p) {
+        const dist = Math.sqrt(dx2*dx2 + dy2*dy2);
+        if (dist >= rr-p && dist < rr+p) gCtx.fillRect(cx+dx2, cy+dy2, p, p);
+      }
+    }
+  }
+
+  // Main ring — sickly teal/void colour, rotates
+  const cols = ['#00ffcc','#7700ff','#ff00ff','#00ffcc'];
+  for (let i = 0; i < 4; i++) {
+    const angle = d.ang + i * Math.PI / 2;
+    const rx = Math.cos(angle) * r * 0.8;
+    const ry = Math.sin(angle) * r * 0.8;
+    gCtx.fillStyle = cols[i];
+    gCtx.globalAlpha = 0.5;
+    gCtx.fillRect(cx + rx - p/2, cy + ry - p/2, p, p);
+  }
+  gCtx.globalAlpha = 1;
+
+  // Outer pixel ring — near-black with dim blue tint
+  gCtx.fillStyle = '#0a003a';
+  for (let dy2 = -(r+p); dy2 <= r+p; dy2 += p) {
+    for (let dx2 = -(r+p); dx2 <= r+p; dx2 += p) {
+      const dist = Math.sqrt(dx2*dx2 + dy2*dy2);
+      if (dist >= r-p && dist < r+p) gCtx.fillRect(cx+dx2, cy+dy2, p, p);
+    }
+  }
+
+  // Void core — absolute black
+  const r2 = Math.floor(r * 0.42);
+  gCtx.fillStyle = '#000010';
+  for (let dy2 = -r2; dy2 <= r2; dy2 += p) {
+    for (let dx2 = -r2; dx2 <= r2; dx2 += p) {
+      if (dx2*dx2 + dy2*dy2 < r2*r2) gCtx.fillRect(cx+dx2, cy+dy2, p, p);
+    }
+  }
+
+  // Eerie dim gleam — only when aligned
+  if (frameCount % 14 < 4) {
+    gCtx.fillStyle = 'rgba(160,0,255,0.6)';
+    gCtx.fillRect(cx - 1, cy - 1, p, p);
+  }
+}
+
+// ── WIRE — yellow energy cable ──
+function drawWire(d, sy) {
+  const y = Math.floor(sy);
+
+  // Main line — yellow
+  gCtx.fillStyle = '#ffe600';
+  gCtx.fillRect(Math.floor(d.x), y - 3, Math.ceil(d.w), 6);
+
+  // Dim amber glow border
+  gCtx.fillStyle = 'rgba(255,160,0,0.3)';
+  gCtx.fillRect(Math.floor(d.x), y - 5, Math.ceil(d.w), 10);
+
+  // End caps — bright yellow
+  gCtx.fillStyle = '#ffe600';
+  gCtx.fillRect(Math.floor(d.x) - 4, y - 8, 4, 16);
+  gCtx.fillRect(Math.floor(d.x + d.w), y - 8, 4, 16);
+
+  // Travelling spark — white-hot pixel
+  const sparkX = d.x + ((d.phase * 18) % d.w);
+  if (frameCount % 4 < 2) {
+    gCtx.fillStyle = '#ffffff';
+    gCtx.fillRect(Math.floor(sparkX) - 2, y - 2, 5, 5);
+    gCtx.fillStyle = '#ffe600';
+    gCtx.fillRect(Math.floor(sparkX) - 1, y - 1, 3, 3);
+  }
+}
+
+// ── RIVAL — red enemy ship ──
+function drawRival(d, sy) {
+  const x = d.x, y = sy;
+  const r = 24;
+
+  gCtx.save();
+  gCtx.translate(x, y);
+  if (d.spd < 0) gCtx.scale(-1, 1);
+
+  // Dim red glow behind ship
+  gCtx.globalAlpha = 0.18;
+  gCtx.fillStyle = '#ff2200';
+  gCtx.beginPath(); gCtx.arc(0, 0, r * 1.3, 0, Math.PI*2); gCtx.fill();
+  gCtx.globalAlpha = 1;
+
+  // Body — red
+  gCtx.fillStyle = '#cc1100';
+  gCtx.beginPath();
+  gCtx.moveTo(r, 0);
+  gCtx.lineTo(-r*0.5, -r*0.6);
+  gCtx.lineTo(-r*0.2, 0);
+  gCtx.lineTo(-r*0.5, r*0.6);
+  gCtx.closePath();
+  gCtx.fill();
+
+  // Wing highlight — brighter red
+  gCtx.fillStyle = '#ff3322';
+  gCtx.beginPath();
+  gCtx.moveTo(r*0.5, 0);
+  gCtx.lineTo(-r*0.1, -r*0.3);
+  gCtx.lineTo(-r*0.1, r*0.3);
+  gCtx.closePath();
+  gCtx.fill();
+
+  // Cockpit — dark red glass
+  gCtx.fillStyle = '#660000';
+  gCtx.beginPath(); gCtx.arc(r*0.2, 0, r*0.18, 0, Math.PI*2); gCtx.fill();
+  gCtx.fillStyle = '#ff6655';
+  gCtx.fillRect(r*0.12, -r*0.06, r*0.1, r*0.12);
+
+  // Engine trail
+  if (frameCount % 5 < 3) {
+    gCtx.fillStyle = '#ff6600';
+    gCtx.fillRect(-r*0.55, -4, r*0.2, 4);
+    gCtx.fillRect(-r*0.55, 1, r*0.2, 4);
+  }
+
+  gCtx.restore();
+}
+
+// ── BOOST SPHERE — pink hyperspeed orb ──
+function drawBoost(b, sy) {
+  const r = 11 + Math.abs(Math.sin(b.gleam)) * 3;
+  const x = Math.floor(b.x);
+  const y = Math.floor(sy);
+  const p = 3;
+
+  // Pink glow halo
+  const haloR = Math.floor(r * 2.0);
+  for (let dy2 = -haloR; dy2 <= haloR; dy2 += p) {
+    for (let dx2 = -haloR; dx2 <= haloR; dx2 += p) {
+      const dist = Math.sqrt(dx2*dx2 + dy2*dy2);
+      if (dist >= r && dist < haloR) {
+        const alpha = 0.22 * (1 - (dist - r) / (haloR - r));
+        gCtx.fillStyle = `rgba(255,80,200,${alpha.toFixed(2)})`;
+        gCtx.fillRect(x+dx2, y+dy2, p, p);
+      }
+    }
+  }
+
+  // Hot pink pixel disk
+  gCtx.fillStyle = '#ff50c8';
+  for (let dy2 = -r; dy2 <= r; dy2 += p) {
+    for (let dx2 = -r; dx2 <= r; dx2 += p) {
+      if (dx2*dx2 + dy2*dy2 < r*r) gCtx.fillRect(x+dx2, y+dy2, p, p);
+    }
+  }
+
+  // Inner bright core
+  const cr = Math.floor(r * 0.5);
+  gCtx.fillStyle = '#ffaaee';
+  for (let dy2 = -cr; dy2 <= cr; dy2 += p) {
+    for (let dx2 = -cr; dx2 <= cr; dx2 += p) {
+      if (dx2*dx2 + dy2*dy2 < cr*cr) gCtx.fillRect(x+dx2, y+dy2, p, p);
+    }
+  }
+
+  // White gleam — blinks
+  if (frameCount % 8 < 4) {
+    gCtx.fillStyle = '#fff';
+    gCtx.fillRect(x - Math.floor(r*0.35), y - Math.floor(r*0.35), p, p);
+  }
+}
+
+// ── SHIP — white player ship ──
+function drawShip(x, y) {
+  const p = 5;
+  const map = [
+    [0,0,0,1,0,0,0],
+    [0,0,1,1,1,0,0],
+    [0,0,1,1,1,0,0],
+    [0,1,1,1,1,1,0],
+    [0,1,1,1,1,1,0],
+    [1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1],
+    [0,1,0,1,0,1,0],
+    [0,0,0,0,0,0,0],
+  ];
+  const mw = map[0].length * p;
+  const mh = map.length * p;
+  const ox = Math.floor(x - mw/2);
+  const oy = Math.floor(y - mh/2);
+
+  // Ship body — white
+  gCtx.fillStyle = '#ffffff';
+  for (let r = 0; r < map.length; r++)
+    for (let c = 0; c < map[r].length; c++)
+      if (map[r][c]) gCtx.fillRect(ox+c*p, oy+r*p, p, p);
+
+  // Cockpit accent — light blue
+  gCtx.fillStyle = '#88ddff';
+  gCtx.fillRect(ox+3*p, oy+1*p, p, p);
+
+  // Engine flames — blue/cyan
+  const fOn = frameCount % 6 < 3;
+  gCtx.fillStyle = fOn ? '#00cfff' : '#0066aa';
+  gCtx.fillRect(ox+p,   oy+mh, p, fOn ? p*3 : p*2);
+  gCtx.fillRect(ox+3*p, oy+mh, p, fOn ? p*3 : p*2);
+  gCtx.fillStyle = fOn ? '#ffffff' : '#00aadd';
+  gCtx.fillRect(ox+5*p, oy+mh, p, fOn ? p*2 : p);
+
+  // Hyperspeed flame — pink
+  if (hyperspeed) {
+    gCtx.fillStyle = '#ff50c8';
+    gCtx.fillRect(ox+p,   oy+mh, p, p*5);
+    gCtx.fillRect(ox+3*p, oy+mh, p, p*5);
+    gCtx.fillRect(ox+5*p, oy+mh, p, p*4);
+  }
+}
+
+// ── HUD ──
+function drawHUD() {
+  const fs = Math.max(14, Math.floor(GW * 0.048));
+
+  // Meter counter — white
+  gCtx.fillStyle = '#ffffff';
+  gCtx.font = `900 ${fs}px 'Courier New'`;
+  gCtx.textAlign = 'center';
+  gCtx.fillText(`${Math.floor(meters)} m`, GW/2, 34);
+
+  // Lives — white triangles, dim when lost
+  gCtx.font = `${Math.floor(fs*0.8)}px 'Courier New'`;
+  gCtx.textAlign = 'left';
+  for (let i = 0; i < 3; i++) {
+    gCtx.globalAlpha = i < lives ? 1 : 0.15;
+    gCtx.fillStyle = '#ffffff';
+    gCtx.fillText('▲', 12 + i*24, 34);
+  }
+  gCtx.globalAlpha = 1;
+
+  // Level label — pale blue
+  gCtx.textAlign = 'right';
+  gCtx.font = `${Math.floor(fs*0.6)}px 'Courier New'`;
+  gCtx.fillStyle = '#88aacc';
+  gCtx.fillText(LEVELS[curLevel].noVerbs ? 'FREE FLIGHT' : `LV ${curLevel}`, GW-10, 34);
+
+  // Hyperspeed label — hot pink
+  if (hyperspeed) {
+    gCtx.textAlign = 'center';
+    gCtx.font = `900 ${Math.floor(fs*0.65)}px 'Courier New'`;
+    gCtx.fillStyle = '#ff50c8';
+    gCtx.fillText('HYPERSPEED', GW/2, 56);
+  }
+
+  // First-time hint — pale
+  if (frameCount < 150) {
+    gCtx.globalAlpha = Math.min(1,(150-frameCount)/50)*0.4;
+    gCtx.font = `${Math.floor(fs*0.6)}px 'Courier New'`;
+    gCtx.textAlign = 'center';
+    gCtx.fillStyle = '#aaccff';
+    gCtx.fillText('slide to move', GW/2, GH-18);
+    gCtx.globalAlpha = 1;
+  }
+}
+
+// ══════════════════════════════════════
+//  GAME LOOP
+// ══════════════════════════════════════
+function gameLoop() {
+  if (!gameRunning) return;
+  update();
+  render();
+  animId = requestAnimationFrame(gameLoop);
+}
+
+// ══════════════════════════════════════
+//  HIT & BOOST
+// ══════════════════════════════════════
+function hitEnemy() {
+  SFX.explosion();
+  gameRunning = false;
+  cancelAnimationFrame(animId);
+  const lv = LEVELS[curLevel];
+  if (lv.noVerbs && playCount <= 1) {
+    // First run: no verbs, just lose a life and respawn
+    lives--;
+    if (lives <= 0) { showGameOver(); return; }
+    setTimeout(() => { gameRunning = true; gameLoop(); }, 500);
+  } else {
+    setTimeout(() => showTitleCard('death'), 300);
+  }
+}
+
+function activateBoost() {
+  gameRunning = false;
+  cancelAnimationFrame(animId);
+  const lv = LEVELS[curLevel];
+  if (lv.noVerbs && playCount <= 1) {
+    hyperspeed = true; hyperspeedTimer = 220;
+    lanes = lanes.filter(l => !l.active || l.worldY + scrollY < ship.y - 60);
+    gameRunning = true; gameLoop();
+  } else {
+    showTitleCard('boost');
+  }
+}
+
+// ══════════════════════════════════════
+//  TITLE CARD (shown before question)
+// ══════════════════════════════════════
+let _pendingQContext = '';
+
+function showTitleCard(ctx) {
+  _pendingQContext = ctx;
+  const lv = LEVELS[curLevel].noVerbs ? LEVELS[1] : LEVELS[curLevel];
+  // Only show the card the first time this level's card appears
+  const cardKey = lv.id;
+  if (shownTitleCards.has(cardKey)) {
+    showQuestion(ctx);
+    return;
+  }
+  shownTitleCards.add(cardKey);
+
+  document.getElementById('tcLabel').textContent =
+    ctx === 'boost' ? '⚡ HYPERSPEED LOCKED' : '▲ SHIP DESTROYED';
+  document.getElementById('tcType').textContent = `LEVEL ${lv.id}`;
+  document.getElementById('tcName').textContent = lv.name;
+  document.getElementById('tcRule').innerHTML = lv.rule.replace(/\n/g,'<br>');
+
+  const tbl = document.getElementById('tcTable');
+  tbl.innerHTML = '';
+  if (lv.examples.length > 0) {
+    const thead = document.createElement('tr');
+    ['PRESENT','PAST','PARTICIPLE'].forEach(h => {
+      const th = document.createElement('th');
+      th.textContent = h;
+      th.style.cssText = 'background:#2a3278;color:#00cfff;font-family:Courier New,monospace;font-size:clamp(8px,2vw,10px);padding:5px 6px;border:1px solid #2a3278;text-align:center;letter-spacing:1px;';
+      thead.appendChild(th);
+    });
+    tbl.appendChild(thead);
+    for (const [p,ps,pp] of lv.examples) {
+      const tr = document.createElement('tr');
+      [p,ps,pp].forEach(v => {
+        const td = document.createElement('td');
+        td.textContent = v;
+        td.style.cssText = 'border:1px solid #2a3278;padding:3px 5px;font-family:Courier New,monospace;font-size:clamp(8px,2vw,10px);text-align:center;background:#101540;color:#ffe600;';
+        tr.appendChild(td);
+      });
+      tbl.appendChild(tr);
+    }
+  }
+
+  const tc = document.getElementById('titleCard');
+  tc.style.display = 'block';
+}
+
+function dismissTitleCard() {
+  document.getElementById('titleCard').style.display = 'none';
+  showQuestion(_pendingQContext);
+}
+document.getElementById('gotItBtn').addEventListener('click', dismissTitleCard);
+
+// ══════════════════════════════════════
+//  QUESTIONS
+// ══════════════════════════════════════
+function showQuestion(ctx) {
+  qContext = ctx; qAnswered = false; totalAsked++;
+  const overlay = document.getElementById('questionOverlay');
+  overlay.classList.add('active');
+  document.getElementById('qlabel').textContent =
+    ctx === 'boost' ? '⚡ HYPERSPEED LOCKED' : '▲ SHIP DESTROYED';
+
+  const ql = document.getElementById('qlives');
+  ql.innerHTML = '';
+  for (let i = 0; i < 3; i++) {
+    const d = document.createElement('div');
+    d.className = 'qlife' + (i >= lives ? ' lost' : '');
+    d.textContent = '▲'; ql.appendChild(d);
+  }
+  document.getElementById('qfb').textContent = '';
+  document.getElementById('qfb').className = 'qfb';
+  document.getElementById('qcont').style.display = 'none';
+  document.getElementById('qcont').className = 'qcont';
+
+  // On level 0 from second play onward, pull from level 1
+  const lv = (LEVELS[curLevel].noVerbs) ? LEVELS[1] : LEVELS[curLevel];
+
+  // Gate question complexity on current performance
+  // Also require a minimum of 5 answers before unlocking harder types
+  const pctSoFar = levelAsked > 0 ? levelCorrect / levelAsked : 1;
+  const enoughData = levelAsked >= 5;
+  const allTypes = lv.questionTypes;
+  // Filter question types by study mode — yesno/wrongright always allowed
+  let modeFiltered = allTypes.filter(t => {
+    if (studyMode === 'both') return true;
+    // 'choice' and 'write' will be redirected inside buildQ; keep them
+    return true;
+  });
+  let pool;
+  if (enoughData && pctSoFar >= 0.92 && allTypes.includes('wrongright')) {
+    pool = allTypes; // all types including wrongright
+  } else if (enoughData && pctSoFar >= 0.85 && allTypes.includes('write')) {
+    pool = allTypes.filter(t => t !== 'wrongright');
+  } else {
+    pool = allTypes.filter(t => t !== 'write' && t !== 'wrongright');
+  }
+  if (pool.length === 0) pool = allTypes;
+  const type = pool[Math.floor(Math.random() * pool.length)];
+  // Only use verbs from categories the student has already seen (knownCats)
+  const knownSet = new Set(lv.knownCats);
+  const unlockedVerbs = LEVELS.slice(1, LEVELS.indexOf(lv) + 1)
+    .flatMap(l => l.verbs)
+    .filter(v => knownSet.has(v.cat));
+  const verbPool = unlockedVerbs.length > 0 ? unlockedVerbs : lv.verbs;
+  const verb = verbPool[Math.floor(Math.random()*verbPool.length)];
+  document.getElementById('qverb').style.display = 'none';
+  buildQ(type, verb, lv);
+}
+
+function buildQ(type, verb, lv) {
+  const body = document.getElementById('qbody');
+  body.innerHTML = '';
+  document.getElementById('qtext').textContent = '';
+
+  if (type === 'yesno') {
+    const cat = lv.knownCats[Math.floor(Math.random()*lv.knownCats.length)];
+    const isYes = verb.cat === cat;
+    document.getElementById('qtype').textContent = 'CATEGORY CHECK';
+    document.getElementById('qtext').textContent = `Is "${verb.p}" a ${cat} verb?`;
+    document.getElementById('qverb').style.display = 'block';
+    document.getElementById('qverb').textContent = `${verb.p} · ${verb.ps} · ${verb.pp}`;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'choices';
+    ['Yes','No'].forEach((c, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'cbtn';
+      btn.innerHTML = `<span class="ckey">${['A','B'][i]}</span>${c}`;
+      btn.addEventListener('click', () => {
+        const correct = isYes ? 'Yes' : 'No';
+        handleChoice(btn, wrap, c, correct);
+      });
+      wrap.appendChild(btn);
+    });
+    body.appendChild(wrap);
+
+  } else if (type === 'choice') {
+    const askPP = studyMode === 'pp' || (studyMode === 'both' && Math.random() > 0.5 && verb.ps !== verb.pp);
+    const correct = askPP ? verb.pp : verb.ps;
+    const label = askPP ? 'past participle' : 'past simple';
+    document.getElementById('qtype').textContent = `CHOOSE THE FORM · ${verb.cat}`;
+    document.getElementById('qtext').innerHTML = `"${verb.p}" — what is the ${label}?`;
+
+    const opts = shuffle([correct, ...wrongForms(verb.p, correct, lv).slice(0,3)]);
+    const wrap = document.createElement('div');
+    wrap.className = 'choices';
+    opts.forEach((o, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'cbtn';
+      btn.innerHTML = `<span class="ckey">${['A','B','C','D'][i]}</span>${o}`;
+      btn.addEventListener('click', () => handleChoice(btn, wrap, o, correct));
+      wrap.appendChild(btn);
+    });
+    body.appendChild(wrap);
+
+  } else if (type === 'write') {
+    const askPP = studyMode === 'pp' || (studyMode === 'both' && Math.random() > 0.5 && verb.ps !== verb.pp);
+    const correct = askPP ? verb.pp : verb.ps;
+    const label = askPP ? 'past participle' : 'past simple';
+    document.getElementById('qtype').textContent = `WRITE THE FORM · ${verb.cat}`;
+    document.getElementById('qtext').innerHTML = `Write the ${label} of "${verb.p}":`;
+
+    const inp = document.createElement('input');
+    inp.className = 'qinput';
+    inp.type = 'text';
+    inp.placeholder = 'type here...';
+    inp.autocomplete = 'off';
+    inp.setAttribute('autocorrect','off');
+    inp.setAttribute('spellcheck','false');
+
+    const sub = document.createElement('button');
+    sub.className = 'qsubmit';
+    sub.textContent = 'CHECK →';
+
+    const doCheck = () => {
+      if (qAnswered) return;
+      qAnswered = true;
+      inp.disabled = true;
+      sub.disabled = true;
+      const won = inp.value.trim().toLowerCase() === correct.toLowerCase();
+      if (!won) inp.style.opacity = '0.4';
+      resolveQ(won, won ? null : correct);
+    };
+
+    sub.addEventListener('click', doCheck);
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') doCheck(); });
+
+    body.appendChild(inp);
+    body.appendChild(sub);
+    setTimeout(() => inp.focus(), 80);
+
+  } else if (type === 'wrongright') {
+    const askPP = studyMode === 'pp' || (studyMode === 'both' && Math.random() > 0.5 && verb.ps !== verb.pp);
+    const correctForm = askPP ? verb.pp : verb.ps;
+    const label = askPP ? 'past participle' : 'past simple';
+    const isCorrect = Math.random() > 0.5;
+    const shownForm = isCorrect ? correctForm : wrongForms(verb.p, correctForm, lv)[0] || correctForm + 'ed';
+    document.getElementById('qtype').textContent = `CORRECT OR WRONG? · ${verb.cat}`;
+    document.getElementById('qtext').innerHTML = `Is this the right ${label} of "${verb.p}"?`;
+    document.getElementById('qverb').style.display = 'block';
+    document.getElementById('qverb').textContent = shownForm;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'choices';
+    ['✓  Correct','✗  Wrong'].forEach((label2, i) => {
+      const btn2 = document.createElement('button');
+      btn2.className = 'cbtn';
+      btn2.innerHTML = `<span class="ckey">${['A','B'][i]}</span>${label2}`;
+      btn2.addEventListener('click', () => {
+        const chosen = i === 0 ? 'correct' : 'wrong';
+        const answer = isCorrect ? 'correct' : 'wrong';
+        const won = chosen === answer;
+        handleChoice(btn2, wrap, chosen, answer);
+        // also show what the right form was if they got it wrong
+        if (!won) {
+          const hint = document.createElement('div');
+          hint.style.cssText = 'font-size:12px;text-align:center;margin-top:8px;color:#5566aa;';
+          hint.textContent = `The correct ${label} is: ${correctForm}`;
+          wrap.appendChild(hint);
+        }
+      });
+      wrap.appendChild(btn2);
+    });
+    body.appendChild(wrap);
+  }
+}
+
+function handleChoice(btn, wrap, chosen, correct) {
+  if (qAnswered) return;
+  qAnswered = true;
+  const all = wrap.querySelectorAll('.cbtn');
+  all.forEach(b => b.disabled = true);
+  const won = chosen === correct;
+  btn.classList.add(won ? 'correct' : 'wrong');
+  if (!won) {
+    all.forEach(b => {
+      if (b.textContent.replace(/^[A-D]/, '').trim() === correct) b.classList.add('correct');
+    });
+  }
+  resolveQ(won, won ? null : correct);
+}
+
+function wrongForms(base, correct, lv) {
+  // Generate plausible misspellings of the correct form
+  const misspell = (word) => {
+    const variants = [];
+    // Double/un-double final consonant
+    if (/[^aeiou][aeiou][b-df-hj-np-tv-z]$/.test(word)) {
+      variants.push(word.slice(0,-1)); // remove doubled consonant
+    } else {
+      variants.push(word + word.slice(-1)); // double it
+    }
+    // -ed vs -d vs -ied vs -t endings
+    if (word.endsWith('ied'))  { variants.push(word.slice(0,-3)+'ed'); variants.push(word.slice(0,-3)+'yed'); }
+    if (word.endsWith('ed'))   { variants.push(word.slice(0,-2)+'t'); variants.push(word.slice(0,-2)+'ied'); variants.push(word.slice(0,-1)); }
+    if (word.endsWith('d') && !word.endsWith('ed')) { variants.push(word+'ed'); variants.push(word.slice(0,-1)+'ed'); }
+    if (word.endsWith('t'))    { variants.push(word.slice(0,-1)+'ed'); variants.push(word.slice(0,-1)+'yed'); }
+    // -en vs -n vs -on endings (participle)
+    if (word.endsWith('en'))   { variants.push(word.slice(0,-2)+'n'); variants.push(word.slice(0,-2)+'on'); }
+    if (word.endsWith('n') && !word.endsWith('en')) { variants.push(word+'en'); }
+    // Wrong vowel in middle (for strong verbs)
+    variants.push(word.replace(/o/, 'a').replace(/a/, 'o'));
+    variants.push(word.replace(/ew/, 'ow').replace(/ow/, 'ew'));
+    variants.push(word.replace(/ou/, 'o').replace(/([^aeiou])o([^aeiou])/, '$1ou$2'));
+    // Remove/add e before suffix
+    if (word.endsWith('ed') || word.endsWith('en')) {
+      variants.push(word.slice(0,-2)+'e'+word.slice(-2));
+    }
+    return variants.filter(v => v !== word && v !== correct && v.length > 1 && v !== base);
+  };
+
+  const cands = [...new Set(misspell(correct))];
+  // Pad with forms from ALL unlocked + known-cat verbs if needed
+  const knownSet2 = new Set(lv.knownCats);
+  const allUnlocked = LEVELS.slice(1, LEVELS.indexOf(lv) + 1)
+    .flatMap(l => l.verbs)
+    .filter(v => knownSet2.has(v.cat));
+  const padPool = allUnlocked.length > 0 ? allUnlocked : lv.verbs;
+  if (cands.length < 3) {
+    for (const v of shuffle([...padPool])) {
+      if (v.ps !== correct && v.ps !== base) cands.push(v.ps);
+      if (v.pp !== correct && v.pp !== base) cands.push(v.pp);
+      if (cands.length >= 6) break;
+    }
+  }
+  return shuffle([...new Set(cands)].filter(f => f !== correct));
+}
+
+function shuffle(a) { return a.sort(()=>Math.random()-0.5); }
+
+
+
+function resolveQ(won, correctAns) {
+  const fb = document.getElementById('qfb');
+  levelAsked++; totalAsked++;
+  if (won) {
+    totalCorrect++; levelCorrect++;
+    streak++;
+    SFX.correct();
+    let msg = qContext==='boost' ? 'HYPERSPEED UNLOCKED!' : 'CORRECT — LIFE SAVED!';
+    if (streak > 1) msg += `  ×${streak}`;
+    fb.textContent = msg;
+    fb.className = 'qfb ok';
+  } else {
+    streak = 0;
+    SFX.wrong();
+    lives = Math.max(0, lives - 1);
+    fb.textContent = correctAns ? `WRONG — it was: ${correctAns}` : 'WRONG — life lost.';
+    fb.className = 'qfb fail';
+  }
+  // Refresh lives display
+  const ql = document.getElementById('qlives');
+  ql.innerHTML = '';
+  for (let i=0;i<3;i++) {
+    const d=document.createElement('div');
+    d.className='qlife'+(i>=lives?' lost':'');
+    d.textContent='▲'; ql.appendChild(d);
+  }
+  if (lives<=0) { SFX.playerDeath(); setTimeout(showGameOver,700); return; }
+
+  // Check level-up: pass at 70%+ after 10 answers, or force evaluation at 20
+  const lv = LEVELS[curLevel].noVerbs ? LEVELS[1] : LEVELS[curLevel];
+  const isLastLevel = curLevel >= LEVELS.length - 1;
+  const canAdvance = !isLastLevel && !lv.noVerbs;
+  if (canAdvance) {
+    const pct = levelCorrect / levelAsked;
+    const hitEarly = levelAsked >= LEVEL_MIN_ASKED && pct >= LEVEL_PASS_PCT;
+    const hitMax   = levelAsked >= LEVEL_MAX_ASKED;
+    if (hitEarly || hitMax) {
+      setTimeout(() => showLevelUpBanner(pct), 700);
+      return;
+    }
+  }
+
+  const btn = document.getElementById('qcont');
+  btn.style.display = 'block'; btn.className = 'qcont show';
+}
+
+function continueAfterQ() {
+  document.getElementById('questionOverlay').classList.remove('active');
+  const won = document.getElementById('qfb').classList.contains('ok');
+  if (qContext==='boost' && won) {
+    hyperspeed = true; hyperspeedTimer = 220;
+  }
+  // Clear lanes overlapping the ship so it doesn't instantly die on resume
+  lanes = lanes.filter(l => {
+    const sy = l.worldY + scrollY;
+    return sy < ship.y - 60 || sy > ship.y + 60;
+  });
+  gameRunning = true; gameLoop();
+}
+
+function showLevelUpBanner(pct) {
+  const scorePct = Math.round(pct * 100);
+  let grade, phrase;
+  const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+  if (scorePct >= 90)      { grade = `${scorePct}%`; phrase = pick(['ATTABOY!','GREAT JOB!','ARE YOU AMERICAN?','GO TO HARVARD ALREADY']); }
+  else if (scorePct >= 80) { grade = `${scorePct}%`; phrase = pick(['WONDERFULLY DONE!','YOU ARE A HACKER','AMAZING!','ARE YOU FOR REAL?']); }
+  else if (scorePct >= 70) { grade = `${scorePct}%`; phrase = pick(['KEEP GOING!','HARD WORK SOLVES ANYTHING','ALMOST THERE!','STUDY STUDY STUDY']); }
+  else if (scorePct >= 60) { grade = `${scorePct}%`; phrase = pick(['YOU CAN DO IT!','TRY!','MORE GAME FOR YOU']); }
+  else                     { grade = `${scorePct}%`; phrase = 'GAME OVER. TRY AGAIN.'; }
+
+  // If below 70%, don't advance — restart level
+  const passed = pct >= LEVEL_PASS_PCT;
+
+  const overlay = document.getElementById('questionOverlay');
+  overlay.classList.add('active');
+  document.getElementById('qlabel').textContent = passed ? '★ LEVEL COMPLETE' : '✗ LEVEL FAILED';
+  document.getElementById('qlives').innerHTML = '';
+  document.getElementById('qtype').textContent = `SCORE: ${grade}`;
+  document.getElementById('qtext').textContent = phrase;
+  document.getElementById('qverb').style.display = 'none';
+  document.getElementById('qbody').innerHTML = `<div style="font-size:clamp(11px,3vw,13px);text-align:center;color:#5566aa;margin-top:4px;">${levelCorrect} correct out of ${levelAsked}</div>`;
+  const isLastLevel = curLevel >= LEVELS.length - 1;
+
+  document.getElementById('qfb').textContent = passed
+    ? (isLastLevel ? 'You know them all. Keep going!' : 'Get ready for the next verb type.')
+    : 'You need 70% to advance. Keep practising!';
+  document.getElementById('qfb').className = passed ? 'qfb ok' : 'qfb fail';
+  const btn = document.getElementById('qcont');
+  btn.style.display = 'block'; btn.className = 'qcont show';
+
+  if (passed) {
+    btn.textContent = isLastLevel ? 'PLAY AGAIN →' : 'NEXT LEVEL →';
+    btn.onclick = () => {
+      overlay.classList.remove('active');
+      btn.onclick = continueAfterQ;
+      btn.textContent = 'CONTINUE →';
+      levelCorrect = 0; levelAsked = 0;
+      if (isLastLevel) {
+        // loop level 19 endlessly
+        showLesson(curLevel);
+      } else {
+        curLevel++;
+        showLesson(curLevel);
+      }
+    };
+  } else {
+    btn.textContent = 'TRY AGAIN →';
+    btn.onclick = () => {
+      overlay.classList.remove('active');
+      btn.onclick = continueAfterQ;
+      btn.textContent = 'CONTINUE →';
+      levelCorrect = 0; levelAsked = 0;
+      gameRunning = true; gameLoop();
+    };
+  }
+}
+
+function tryLevelUp() {
+  gameRunning = false; cancelAnimationFrame(animId);
+  curLevel++; showLesson(curLevel);
+}
+
+function showGameOver() {
+  stopBgMusic();
+  document.getElementById('questionOverlay').classList.remove('active');
+  gameRunning = false; cancelAnimationFrame(animId);
+  const lv = LEVELS[curLevel];
+  document.getElementById('goStats').innerHTML =
+    `${Math.floor(meters)} meters<br>`+
+    `${lv.noVerbs?'Free Flight':`Level ${curLevel} — ${lv.name}`}<br>`+
+    (lv.noVerbs?'':`${totalCorrect} / ${totalAsked} correct`);
+  setScreen('gameOverScreen');
+}
+
+function replayLevel() { startGame(curLevel); }
+function goTitle() { stopBgMusic(); setScreen('titleScreen'); }
+
+window.addEventListener('resize', () => {
+  if (document.getElementById('gameScreen').classList.contains('active')) {
+    setupCanvas();
+    ship.y = GH - 100;
+    if (ship.x > GW) ship.x = ship.targetX = GW/2;
+  }
+});
+</script>
+</body>
+</html>
