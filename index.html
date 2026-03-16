@@ -2539,7 +2539,12 @@ function showLevelUpBanner(pct) {
         showLesson(curLevel);
       } else {
         curLevel++;
-        showLesson(curLevel);
+        // Skip the lesson card for level 1 — player already saw Regular verbs during FREE FLIGHT
+        if (curLevel === 1) {
+          startGame(curLevel);
+        } else {
+          showLesson(curLevel);
+        }
       }
     };
   } else {
