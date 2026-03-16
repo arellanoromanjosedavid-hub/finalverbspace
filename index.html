@@ -195,7 +195,7 @@ canvas { display: block; image-rendering: pixelated; }
         <button class="pxbtn mode-btn outline" data-mode="pp" style="font-size:11px;padding:10px 16px;letter-spacing:2px;">PARTICIPLE</button>
       </div>
     </div>
-    <button class="pxbtn" id="startBtn">[ START ]</button>
+    <button class="pxbtn" id="startBtn" style="background:#00e676;color:#0a0d2e;box-shadow:4px 4px 0 rgba(0,230,118,0.35);">[ START ]</button>
   </div>
 </div>
 
@@ -233,6 +233,7 @@ canvas { display: block; image-rendering: pixelated; }
 </div>
 
 <!-- QUESTION -->
+<canvas id="fwCanvas" style="display:none;position:fixed;inset:0;pointer-events:none;z-index:55;"></canvas>
 <div id="questionOverlay">
   <div class="qlabel" id="qlabel">ship destroyed</div>
   <div class="qlives" id="qlives"></div>
@@ -340,7 +341,46 @@ const SFX = {
   wrong() {
     playTone(200, 'square', 0.10, 0.16);
     playTone(150, 'square', 0.14, 0.16, 0.10);
-  }
+  },
+  levelWin() {
+    const ac = getAudio();
+    const now = ac.currentTime;
+    // Triangle + slight square layer for brass body
+    // [freq, startTime, duration, vol]
+    const notes = [
+      [523,  0.00, 0.13, 0.24],
+      [659,  0.13, 0.13, 0.26],
+      [784,  0.26, 0.13, 0.28],
+      [1047, 0.39, 0.13, 0.30],
+      [988,  0.52, 0.08, 0.22],
+      [1047, 0.60, 0.08, 0.24],
+      [988,  0.68, 0.08, 0.22],
+      [1047, 0.76, 0.32, 0.34],
+    ];
+    notes.forEach(([freq, t, dur, vol]) => {
+      // Main triangle — warm body
+      const tri = ac.createOscillator();
+      const triG = ac.createGain();
+      tri.type = 'triangle';
+      tri.frequency.setValueAtTime(freq, now + t);
+      triG.gain.setValueAtTime(0.001, now + t);
+      triG.gain.linearRampToValueAtTime(vol, now + t + 0.018); // slow attack = brassy
+      triG.gain.exponentialRampToValueAtTime(0.001, now + t + dur);
+      tri.connect(triG); triG.connect(ac.destination);
+      tri.start(now + t); tri.stop(now + t + dur + 0.05);
+
+      // Thin square layer an octave up — adds brightness/bite
+      const sq = ac.createOscillator();
+      const sqG = ac.createGain();
+      sq.type = 'square';
+      sq.frequency.setValueAtTime(freq * 2, now + t);
+      sqG.gain.setValueAtTime(0.001, now + t);
+      sqG.gain.linearRampToValueAtTime(vol * 0.08, now + t + 0.025);
+      sqG.gain.exponentialRampToValueAtTime(0.001, now + t + dur * 0.7);
+      sq.connect(sqG); sqG.connect(ac.destination);
+      sq.start(now + t); sq.stop(now + t + dur + 0.05);
+    });
+  },
 };
 
 // ── Background music ──
@@ -2084,7 +2124,9 @@ let _pendingQContext = '';
 
 function showTitleCard(ctx) {
   _pendingQContext = ctx;
-  const lv = LEVELS[curLevel].noVerbs ? LEVELS[1] : LEVELS[curLevel];
+  // During FREE FLIGHT there's no level to introduce — go straight to question
+  if (LEVELS[curLevel].noVerbs) { showQuestion(ctx); return; }
+  const lv = LEVELS[curLevel];
   // Only show the card the first time this level's card appears
   const cardKey = lv.id;
   if (shownTitleCards.has(cardKey)) {
@@ -2132,6 +2174,79 @@ function dismissTitleCard() {
 }
 document.getElementById('gotItBtn').addEventListener('click', dismissTitleCard);
 
+
+// ══════════════════════════════════════
+//  FIREWORKS
+// ══════════════════════════════════════
+let fwAnimId = null;
+let fwParticles = [];
+
+function launchFireworks() {
+  const cvs = document.getElementById('fwCanvas');
+  cvs.width  = window.innerWidth;
+  cvs.height = window.innerHeight;
+  cvs.style.display = 'block';
+  const ctx = cvs.getContext('2d');
+  fwParticles = [];
+
+  // Burst positions — spread across screen
+  const bursts = [
+    [0.2, 0.25], [0.5, 0.15], [0.8, 0.25],
+    [0.3, 0.50], [0.7, 0.45], [0.5, 0.60],
+  ];
+  const pinkShades = ['#ff50c8','#ff80d8','#ff20b0','#ffaaee','#cc00aa','#ffffff'];
+
+  bursts.forEach(([fx, fy], bi) => {
+    setTimeout(() => {
+      const bx = cvs.width  * fx;
+      const by = cvs.height * fy;
+      for (let i = 0; i < 38; i++) {
+        const angle = (Math.PI * 2 / 38) * i + Math.random() * 0.3;
+        const spd   = 2.5 + Math.random() * 4.5;
+        fwParticles.push({
+          x: bx, y: by,
+          vx: Math.cos(angle) * spd,
+          vy: Math.sin(angle) * spd,
+          life: 52 + Math.floor(Math.random() * 20),
+          maxLife: 72,
+          color: pinkShades[Math.floor(Math.random() * pinkShades.length)],
+          size: 2 + Math.random() * 2,
+        });
+      }
+    }, bi * 140);
+  });
+
+  function drawFW() {
+    ctx.clearRect(0, 0, cvs.width, cvs.height);
+    for (let i = fwParticles.length - 1; i >= 0; i--) {
+      const p = fwParticles[i];
+      p.x  += p.vx;
+      p.y  += p.vy;
+      p.vy += 0.08; // gravity
+      p.vx *= 0.97;
+      p.life--;
+      if (p.life <= 0) { fwParticles.splice(i, 1); continue; }
+      ctx.globalAlpha = p.life / p.maxLife;
+      ctx.fillStyle   = p.color;
+      ctx.fillRect(Math.floor(p.x), Math.floor(p.y), p.size, p.size);
+    }
+    ctx.globalAlpha = 1;
+    if (fwParticles.length > 0) {
+      fwAnimId = requestAnimationFrame(drawFW);
+    } else {
+      stopFireworks();
+    }
+  }
+  fwAnimId = requestAnimationFrame(drawFW);
+}
+
+function stopFireworks() {
+  if (fwAnimId) { cancelAnimationFrame(fwAnimId); fwAnimId = null; }
+  fwParticles = [];
+  const cvs = document.getElementById('fwCanvas');
+  if (cvs) { cvs.style.display = 'none'; cvs.getContext('2d').clearRect(0,0,cvs.width,cvs.height); }
+}
+
 // ══════════════════════════════════════
 //  QUESTIONS
 // ══════════════════════════════════════
@@ -2155,7 +2270,14 @@ function showQuestion(ctx) {
   document.getElementById('qcont').className = 'qcont';
 
   // On level 0 from second play onward, pull from level 1
-  const lv = (LEVELS[curLevel].noVerbs) ? LEVELS[1] : LEVELS[curLevel];
+  const isFF = LEVELS[curLevel].noVerbs;
+  const lv = isFF ? {
+    questionTypes: ['yesno','choice'],
+    knownCats: Object.keys(CAT_PATTERN),
+    verbs: LEVELS.slice(1).flatMap(l => l.verbs),
+  } : LEVELS[curLevel];
+  // For FREE FLIGHT, build a combined verb pool from all levels
+  const ffAllVerbs = isFF ? LEVELS.slice(1).flatMap(l => l.verbs) : null;
 
   // Gate question complexity on current performance
   // Also require a minimum of 5 answers before unlocking harder types
@@ -2183,7 +2305,8 @@ function showQuestion(ctx) {
   const unlockedVerbs = LEVELS.slice(1, LEVELS.indexOf(lv) + 1)
     .flatMap(l => l.verbs)
     .filter(v => knownSet.has(v.cat));
-  const verbPool = unlockedVerbs.length > 0 ? unlockedVerbs : lv.verbs;
+  const verbPool = ffAllVerbs ? ffAllVerbs
+    : (unlockedVerbs.length > 0 ? unlockedVerbs : lv.verbs);
   const verb = verbPool[Math.floor(Math.random()*verbPool.length)];
   document.getElementById('qverb').style.display = 'none';
   buildQ(type, verb, lv);
@@ -2244,20 +2367,27 @@ function buildQ(type, verb, lv) {
           return [v, fakePs, fakePs];
         }
         case 'Repeater':
-          return [v, v, v];
+          return [v, v+'ed', v+'ed'];
         default:
           return [v, v+'ed', v+'ed'];
       }
     }
 
-    const realTriplet  = `${verb.p} · ${verb.ps} · ${verb.pp}`;
-    const [fp, fps, fpp] = fakeTriplet(verb.p, fakeCat);
-    const fakeTripletStr = `${fp} · ${fps} · ${fpp}`;
+    const realTriplet = `${verb.p} · ${verb.ps} · ${verb.pp}`;
 
-    // Sanity: if fake accidentally matches real, fall back to a simple -ed form
-    const safeDistractor = fakeTripletStr === realTriplet
-      ? `${verb.p} · ${verb.p}ed · ${verb.p}ed`
-      : fakeTripletStr;
+    // Try each available distractor cat until we get something genuinely different
+    const allCats = Object.keys(CAT_PATTERN);
+    const tryCats = [fakeCat, ...allCats.filter(c => c !== fakeCat && c !== verb.cat)];
+    let safeDistractor = null;
+    for (const cat of tryCats) {
+      const [fp, fps, fpp] = fakeTriplet(verb.p, cat);
+      const candidate = `${fp} · ${fps} · ${fpp}`;
+      if (candidate !== realTriplet) { safeDistractor = candidate; break; }
+    }
+    // Absolute last resort — append 'ed' and force -en participle, guaranteed different
+    if (!safeDistractor || safeDistractor === realTriplet) {
+      safeDistractor = `${verb.p} · ${verb.p}ed · ${verb.p}en`;
+    }
 
     const options = shuffle([
       { label: realTriplet,    correct: true  },
@@ -2466,12 +2596,13 @@ function resolveQ(won, correctAns) {
   if (lives<=0) { SFX.playerDeath(); setTimeout(showGameOver,700); return; }
 
   // Check level-up: pass at 70%+ after 10 answers, or force evaluation at 20
-  const lv = LEVELS[curLevel].noVerbs ? LEVELS[1] : LEVELS[curLevel];
+  const lv = LEVELS[curLevel];
   const isLastLevel = curLevel >= LEVELS.length - 1;
-  const canAdvance = !isLastLevel && !lv.noVerbs;
+  const canAdvance = !isLastLevel;
   if (canAdvance) {
     const pct = levelCorrect / levelAsked;
-    const hitEarly = levelAsked >= LEVEL_MIN_ASKED && pct >= LEVEL_PASS_PCT;
+    const isFF = LEVELS[curLevel].noVerbs;
+    const hitEarly = levelAsked >= LEVEL_MIN_ASKED && (isFF || pct >= LEVEL_PASS_PCT);
     const hitMax   = levelAsked >= LEVEL_MAX_ASKED;
     if (hitEarly || hitMax) {
       setTimeout(() => showLevelUpBanner(pct), 700);
@@ -2507,12 +2638,22 @@ function showLevelUpBanner(pct) {
   else if (scorePct >= 60) { grade = `${scorePct}%`; phrase = pick(['YOU CAN DO IT!','TRY!','MORE GAME FOR YOU']); }
   else                     { grade = `${scorePct}%`; phrase = 'GAME OVER. TRY AGAIN.'; }
 
-  // If below 70%, don't advance — restart level
-  const passed = pct >= LEVEL_PASS_PCT;
+  // If below 70%, don't advance — restart level (FREE FLIGHT always passes)
+  const passed = LEVELS[curLevel].noVerbs || pct >= LEVEL_PASS_PCT;
 
   const overlay = document.getElementById('questionOverlay');
   overlay.classList.add('active');
+  if (passed) {
+    SFX.levelWin();
+    launchFireworks();
+    overlay.style.background = 'rgba(20,0,30,0.97)';
+    overlay.style.boxShadow = 'inset 0 0 60px rgba(255,80,200,0.18)';
+  } else {
+    overlay.style.background = '';
+    overlay.style.boxShadow = '';
+  }
   document.getElementById('qlabel').textContent = passed ? '★ LEVEL COMPLETE' : '✗ LEVEL FAILED';
+  document.getElementById('qlabel').style.color = passed ? '#ff50c8' : '';
   document.getElementById('qlives').innerHTML = '';
   document.getElementById('qtype').textContent = `SCORE: ${grade}`;
   document.getElementById('qtext').textContent = phrase;
@@ -2531,6 +2672,9 @@ function showLevelUpBanner(pct) {
     btn.textContent = isLastLevel ? 'PLAY AGAIN →' : 'NEXT LEVEL →';
     btn.onclick = () => {
       overlay.classList.remove('active');
+      overlay.style.background = '';
+      overlay.style.boxShadow = '';
+      stopFireworks();
       btn.onclick = continueAfterQ;
       btn.textContent = 'CONTINUE →';
       levelCorrect = 0; levelAsked = 0;
