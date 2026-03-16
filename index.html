@@ -2201,17 +2201,7 @@ const CAT_PATTERN = {
   'Irregular':    'completely unique',
 };
 
-// ── One iconic anchor verb per category (used in the pattern-match question) ──
-const CAT_ANCHOR = {
-  'Regular':      {p:'work',  ps:'worked',   pp:'worked'},
-  'Semi-Regular': {p:'speak', ps:'spoke',    pp:'spoken'},
-  'Vowel-Shift':  {p:'run',   ps:'ran',      pp:'run'},
-  'A-E-U':        {p:'sing',  ps:'sang',     pp:'sung'},
-  '-ought':       {p:'think', ps:'thought',  pp:'thought'},
-  'Wanna-Be':     {p:'find',  ps:'found',    pp:'found'},
-  'Repeater':     {p:'hit',   ps:'hit',      pp:'hit'},
-  'Irregular':    {p:'go',    ps:'went',     pp:'gone'},
-};
+
 
 function buildQ(type, verb, lv) {
   const body = document.getElementById('qbody');
@@ -2219,28 +2209,73 @@ function buildQ(type, verb, lv) {
   document.getElementById('qtext').textContent = '';
 
   if (type === 'yesno') {
+    // Build a fake conjugation triplet by applying a different category's pattern to this verb
     const otherCats = lv.knownCats.filter(c => c !== verb.cat);
-    const distractorCat = otherCats.length > 0
+    const fakeCat = otherCats.length > 0
       ? otherCats[Math.floor(Math.random() * otherCats.length)]
-      : lv.knownCats[0];
-    const showCorrect = Math.random() > 0.5;
-    const anchorCat = showCorrect ? verb.cat : distractorCat;
-    const anchor = CAT_ANCHOR[anchorCat];
+      : (verb.cat === 'Regular' ? 'Semi-Regular' : 'Regular');
 
-    document.getElementById('qtype').textContent = 'PATTERN MATCH';
-    document.getElementById('qtext').textContent = `Does "${verb.p}" follow the same pattern as "${anchor.p}"?`;
-    document.getElementById('qverb').style.display = 'block';
-    document.getElementById('qverb').textContent = `${anchor.p} · ${anchor.ps} · ${anchor.pp}`;
+    function fakeTriplet(base, targetCat) {
+      const v = base;
+      const stem = v.replace(/e$/, '').replace(/y$/, 'i');
+      switch(targetCat) {
+        case 'Regular':
+          const rs = v.endsWith('e') ? v+'d' : stem+'ed';
+          return [v, rs, rs];
+        case 'Semi-Regular': {
+          // vowel swap + -en participle
+          const fakePs = v.replace(/i/,'o').replace(/ea/,'o').replace(/ee/,'o') || v+'oke';
+          const fakePp = fakePs.replace(/([aeiou])([^aeiou]*)$/,'$1$2en');
+          return [v, fakePs !== v ? fakePs : v+'oke', fakePp];
+        }
+        case 'Vowel-Shift': {
+          const fakePs = v.replace(/i/,'u').replace(/a/,'u').replace(/e/,'u') || v+'ug';
+          return [v, fakePs !== v ? fakePs : v.slice(0,-1)+'ug', fakePs !== v ? fakePs : v.slice(0,-1)+'ug'];
+        }
+        case 'A-E-U': {
+          const fakePs = v.replace(/i/,'a').replace(/ee/,'a').replace(/u/,'a') || v+'ang';
+          const fakePp = fakePs.replace(/a/,'u') || v+'ung';
+          return [v, fakePs !== v ? fakePs : v+'ang', fakePp !== fakePs ? fakePp : v+'ung'];
+        }
+        case '-ought':
+          return [v, v.replace(/[aeiou]+([^aeiou]*)$/,'ought'), v.replace(/[aeiou]+([^aeiou]*)$/,'ought')];
+        case 'Wanna-Be': {
+          const fakePs = v.endsWith('d') ? v.slice(0,-1)+'t' : v+'t';
+          return [v, fakePs, fakePs];
+        }
+        case 'Repeater':
+          return [v, v, v];
+        default:
+          return [v, v+'ed', v+'ed'];
+      }
+    }
+
+    const realTriplet  = `${verb.p} · ${verb.ps} · ${verb.pp}`;
+    const [fp, fps, fpp] = fakeTriplet(verb.p, fakeCat);
+    const fakeTripletStr = `${fp} · ${fps} · ${fpp}`;
+
+    // Sanity: if fake accidentally matches real, fall back to a simple -ed form
+    const safeDistractor = fakeTripletStr === realTriplet
+      ? `${verb.p} · ${verb.p}ed · ${verb.p}ed`
+      : fakeTripletStr;
+
+    const options = shuffle([
+      { label: realTriplet,    correct: true  },
+      { label: safeDistractor, correct: false },
+    ]);
+
+    document.getElementById('qtype').textContent = 'CHOOSE THE REAL CONJUGATION';
+    document.getElementById('qtext').textContent = `Which is the correct conjugation of "${verb.p}"?`;
+    document.getElementById('qverb').style.display = 'none';
 
     const wrap = document.createElement('div');
     wrap.className = 'choices';
-    ['Yes','No'].forEach((c, i) => {
+    options.forEach((opt, i) => {
       const btn = document.createElement('button');
       btn.className = 'cbtn';
-      btn.innerHTML = `<span class="ckey">${['A','B'][i]}</span>${c}`;
+      btn.innerHTML = `<span class="ckey">${['A','B'][i]}</span>${opt.label}`;
       btn.addEventListener('click', () => {
-        const correct = showCorrect ? 'Yes' : 'No';
-        handleChoice(btn, wrap, c, correct);
+        handleChoice(btn, wrap, opt.label, options.find(o => o.correct).label);
       });
       wrap.appendChild(btn);
     });
