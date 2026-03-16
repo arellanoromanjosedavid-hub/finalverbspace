@@ -79,20 +79,20 @@ canvas { display: block; image-rendering: pixelated; }
 /* ── LESSON ── */
 #lessonScreen { padding: 0; gap: 0; overflow: hidden; justify-content: flex-start; background: var(--space-bg); }
 .ls-title {
-  font-size: clamp(11px, 3vw, 15px); font-weight: 900;
+  font-size: clamp(15px, 4.5vw, 22px); font-weight: 900;
   letter-spacing: 2px; color: var(--cyan);
   border-bottom: 2px solid var(--space-border);
-  padding-bottom: 6px; width: 100%; max-width: 500px; text-align: center;
+  padding-bottom: 10px; width: 100%; max-width: 560px; text-align: center;
 }
 .ls-rule {
-  font-size: clamp(9px, 2.2vw, 11px); line-height: 1.8;
-  max-width: 500px; text-align: center; color: var(--text);
+  font-size: clamp(12px, 3.2vw, 15px); line-height: 1.9;
+  max-width: 560px; text-align: center; color: var(--text);
 }
-.ls-table { width: 100%; max-width: 500px; border-collapse: collapse; }
+.ls-table { width: 100%; max-width: 560px; border-collapse: collapse; }
 .ls-table td, .ls-table th {
-  border: 1px solid var(--space-border); padding: 4px 6px;
+  border: 1px solid var(--space-border); padding: 8px 10px;
   font-family: 'Courier New', monospace;
-  font-size: clamp(8px, 2vw, 10px); text-align: center;
+  font-size: clamp(11px, 3vw, 14px); text-align: center;
   color: var(--text);
   background: var(--space-panel);
 }
@@ -201,7 +201,7 @@ canvas { display: block; image-rendering: pixelated; }
 
 <!-- LESSON -->
 <div class="screen" id="lessonScreen" style="position:fixed;inset:0;background:#0a0d2e;z-index:10;">
-  <div style="position:absolute;top:0;left:0;right:0;bottom:64px;padding:16px 16px 12px;display:flex;flex-direction:column;align-items:center;gap:10px;overflow-y:auto;">
+  <div style="position:absolute;top:0;left:0;right:0;bottom:64px;padding:24px 20px 16px;display:flex;flex-direction:column;align-items:center;gap:16px;overflow-y:auto;">
     <div class="ls-title" id="lsTitle"></div>
     <div class="ls-rule" id="lsRule"></div>
     <table class="ls-table" id="lsTable"></table>
@@ -218,13 +218,13 @@ canvas { display: block; image-rendering: pixelated; }
 
 <!-- TITLE CARD — shown before question -->
 <div id="titleCard" style="display:none;position:fixed;inset:0;background:#0a0d2e;z-index:60;">
-  <div id="tcScroll" style="position:absolute;top:0;left:0;right:0;bottom:64px;padding:14px 16px;overflow-y:auto;">
-    <div style="font-size:8px;letter-spacing:4px;color:#5566aa;text-transform:uppercase;text-align:center;margin-bottom:10px;" id="tcLabel"></div>
-    <div style="border:2px solid #2a3278;padding:12px 14px;background:#141a4a;box-shadow:0 0 20px rgba(0,207,255,0.06);">
-      <div style="font-size:8px;letter-spacing:3px;color:#5566aa;text-transform:uppercase;margin-bottom:6px;" id="tcType"></div>
-      <div style="font-size:clamp(13px,4vw,18px);font-weight:900;letter-spacing:2px;margin-bottom:8px;font-family:'Courier New',monospace;color:#00cfff;" id="tcName"></div>
-      <div style="font-size:clamp(9px,2.2vw,11px);line-height:1.6;color:#ccd6ff;margin-bottom:10px;font-family:'Courier New',monospace;" id="tcRule"></div>
-      <table id="tcTable" style="width:100%;border-collapse:collapse;font-family:'Courier New',monospace;font-size:clamp(8px,2vw,10px);"></table>
+  <div id="tcScroll" style="position:absolute;top:0;left:0;right:0;bottom:64px;padding:24px 20px;overflow-y:auto;display:flex;flex-direction:column;align-items:center;">
+    <div style="font-size:10px;letter-spacing:4px;color:#5566aa;text-transform:uppercase;text-align:center;margin-bottom:14px;" id="tcLabel"></div>
+    <div style="border:2px solid #2a3278;padding:20px 22px;background:#141a4a;box-shadow:0 0 20px rgba(0,207,255,0.06);width:100%;max-width:560px;">
+      <div style="font-size:10px;letter-spacing:3px;color:#5566aa;text-transform:uppercase;margin-bottom:8px;" id="tcType"></div>
+      <div style="font-size:clamp(16px,5vw,24px);font-weight:900;letter-spacing:2px;margin-bottom:12px;font-family:'Courier New',monospace;color:#00cfff;" id="tcName"></div>
+      <div style="font-size:clamp(12px,3.2vw,15px);line-height:1.9;color:#ccd6ff;margin-bottom:16px;font-family:'Courier New',monospace;" id="tcRule"></div>
+      <table id="tcTable" style="width:100%;border-collapse:collapse;font-family:'Courier New',monospace;font-size:clamp(11px,3vw,14px);"></table>
     </div>
   </div>
   <div style="position:absolute;bottom:0;left:0;right:0;height:64px;background:#0a0d2e;border-top:2px solid #2a3278;display:flex;align-items:center;justify-content:center;">
@@ -508,9 +508,6 @@ const LEVELS = [
   examples:[], verbs:[], questionTypes:[], knownCats:[], noVerbs:true,
 },
 
-// ─── SHARED VERB POOLS ───
-// (defined inline per level, using cat tags for pool filtering)
-
 // ─── LEVEL 1: REGULAR VERBS ───
 {
   id:1, name:"REGULAR VERBS",
@@ -568,14 +565,14 @@ const LEVELS = [
     {p:'dance',ps:'danced',pp:'danced',cat:'Regular'},
     {p:'learn',ps:'learned',pp:'learned',cat:'Regular'},
   ],
-  questionTypes:['yesno','choice','write','wrongright'], knownCats:['Regular'],
+  questionTypes:['yesno','choice','write'], knownCats:['Regular'],
 },
 
 // ─── LEVEL 2: REGULAR AGAIN ───
 {
   id:2, name:"REGULAR VERBS — AGAIN",
   rule:"Add -ED or -D to form the past simple and past participle.\nBoth forms are always the same.",
-  examples:[['explain','explained','explained'],['create','created','created'],['develop','developed','developed'],['discuss','discussed','discussed']],
+  examples:[['explain','explained','explained'],['create','created','created'],['suggest','suggested','suggested'],['develop','developed','developed']],
   verbs:[
     {p:'explain',ps:'explained',pp:'explained',cat:'Regular'},
     {p:'create',ps:'created',pp:'created',cat:'Regular'},
@@ -656,22 +653,6 @@ const LEVELS = [
   rule:"The vowel shifts in the past tense.\nThe participle adds -N or -EN at the end.\nThese come from old Germanic strong verbs.",
   examples:[['forget','forgot','forgotten'],['freeze','froze','frozen'],['grow','grew','grown'],['know','knew','known']],
   verbs:[
-    {p:'begin',ps:'began',pp:'begun',cat:'Semi-Regular'},
-    {p:'drink',ps:'drank',pp:'drunk',cat:'Semi-Regular'},
-    {p:'ring',ps:'rang',pp:'rung',cat:'Semi-Regular'},
-    {p:'sing',ps:'sang',pp:'sung',cat:'Semi-Regular'},
-    {p:'sink',ps:'sank',pp:'sunk',cat:'Semi-Regular'},
-    {p:'swim',ps:'swam',pp:'swum',cat:'Semi-Regular'},
-    {p:'shrink',ps:'shrank',pp:'shrunk',cat:'Semi-Regular'},
-    {p:'spin',ps:'spun',pp:'spun',cat:'Semi-Regular'},
-    {p:'win',ps:'won',pp:'won',cat:'Semi-Regular'},
-    {p:'dig',ps:'dug',pp:'dug',cat:'Semi-Regular'},
-    {p:'hang',ps:'hung',pp:'hung',cat:'Semi-Regular'},
-    {p:'stick',ps:'stuck',pp:'stuck',cat:'Semi-Regular'},
-    {p:'strike',ps:'struck',pp:'struck',cat:'Semi-Regular'},
-    {p:'cling',ps:'clung',pp:'clung',cat:'Semi-Regular'},
-    {p:'fling',ps:'flung',pp:'flung',cat:'Semi-Regular'},
-    {p:'swing',ps:'swung',pp:'swung',cat:'Semi-Regular'},
     {p:'write',ps:'wrote',pp:'written',cat:'Semi-Regular'},
     {p:'ride',ps:'rode',pp:'ridden',cat:'Semi-Regular'},
     {p:'rise',ps:'rose',pp:'risen',cat:'Semi-Regular'},
@@ -700,9 +681,6 @@ const LEVELS = [
     {p:'shake',ps:'shook',pp:'shaken',cat:'Semi-Regular'},
     {p:'get',ps:'got',pp:'gotten',cat:'Semi-Regular'},
     {p:'forget',ps:'forgot',pp:'forgotten',cat:'Semi-Regular'},
-    {p:'run',ps:'ran',pp:'run',cat:'Semi-Regular'},
-    {p:'come',ps:'came',pp:'come',cat:'Semi-Regular'},
-    {p:'become',ps:'became',pp:'become',cat:'Semi-Regular'},
   ],
   questionTypes:['yesno','choice','write'], knownCats:['Semi-Regular'],
 },
@@ -713,20 +691,6 @@ const LEVELS = [
   rule:"The vowel shifts in the past tense.\nThe participle adds -N or -EN at the end.\nThese come from old Germanic strong verbs.",
   examples:[['speak','spoke','spoken'],['fly','flew','flown'],['give','gave','given'],['take','took','taken']],
   verbs:[
-    {p:'begin',ps:'began',pp:'begun',cat:'Semi-Regular'},
-    {p:'drink',ps:'drank',pp:'drunk',cat:'Semi-Regular'},
-    {p:'sing',ps:'sang',pp:'sung',cat:'Semi-Regular'},
-    {p:'swim',ps:'swam',pp:'swum',cat:'Semi-Regular'},
-    {p:'ring',ps:'rang',pp:'rung',cat:'Semi-Regular'},
-    {p:'sink',ps:'sank',pp:'sunk',cat:'Semi-Regular'},
-    {p:'shrink',ps:'shrank',pp:'shrunk',cat:'Semi-Regular'},
-    {p:'win',ps:'won',pp:'won',cat:'Semi-Regular'},
-    {p:'dig',ps:'dug',pp:'dug',cat:'Semi-Regular'},
-    {p:'stick',ps:'stuck',pp:'stuck',cat:'Semi-Regular'},
-    {p:'strike',ps:'struck',pp:'struck',cat:'Semi-Regular'},
-    {p:'hang',ps:'hung',pp:'hung',cat:'Semi-Regular'},
-    {p:'swing',ps:'swung',pp:'swung',cat:'Semi-Regular'},
-    {p:'fling',ps:'flung',pp:'flung',cat:'Semi-Regular'},
     {p:'write',ps:'wrote',pp:'written',cat:'Semi-Regular'},
     {p:'ride',ps:'rode',pp:'ridden',cat:'Semi-Regular'},
     {p:'drive',ps:'drove',pp:'driven',cat:'Semi-Regular'},
@@ -754,58 +718,137 @@ const LEVELS = [
     {p:'shake',ps:'shook',pp:'shaken',cat:'Semi-Regular'},
     {p:'get',ps:'got',pp:'gotten',cat:'Semi-Regular'},
     {p:'forget',ps:'forgot',pp:'forgotten',cat:'Semi-Regular'},
-    {p:'run',ps:'ran',pp:'run',cat:'Semi-Regular'},
-    {p:'come',ps:'came',pp:'come',cat:'Semi-Regular'},
-    {p:'become',ps:'became',pp:'become',cat:'Semi-Regular'},
-    {p:'rise',ps:'rose',pp:'risen',cat:'Semi-Regular'},
-    {p:'slide',ps:'slid',pp:'slid',cat:'Semi-Regular'},
   ],
   questionTypes:['yesno','choice','write','wrongright'], knownCats:['Semi-Regular'],
 },
 
-// ─── LEVEL 5: MIX REGULAR + SEMI-REGULAR ───
+// ─── LEVEL 5: VOWEL-SHIFT ───
 {
-  id:5, name:"REGULAR + SEMI-REGULAR MIX",
-  rule:"Regular verbs add -ED or -D.\nSemi-regular verbs shift their vowel and add -N or -EN.\nCan you tell them apart?",
-  examples:[['play','played','played'],['speak','spoke','spoken'],['work','worked','worked'],['grow','grew','grown']],
+  id:5, name:"VOWEL-SHIFT VERBS",
+  rule:"The vowel shifts once — then freezes.\nPast simple and past participle are always identical.\nNo -N, no -ED, no extra ending.",
+  examples:[['run','ran','run'],['come','came','come'],['dig','dug','dug'],['win','won','won']],
+  verbs:[
+    {p:'run',ps:'ran',pp:'run',cat:'Vowel-Shift'},
+    {p:'come',ps:'came',pp:'come',cat:'Vowel-Shift'},
+    {p:'become',ps:'became',pp:'become',cat:'Vowel-Shift'},
+    {p:'win',ps:'won',pp:'won',cat:'Vowel-Shift'},
+    {p:'dig',ps:'dug',pp:'dug',cat:'Vowel-Shift'},
+    {p:'hang',ps:'hung',pp:'hung',cat:'Vowel-Shift'},
+    {p:'stick',ps:'stuck',pp:'stuck',cat:'Vowel-Shift'},
+    {p:'strike',ps:'struck',pp:'struck',cat:'Vowel-Shift'},
+    {p:'slide',ps:'slid',pp:'slid',cat:'Vowel-Shift'},
+    {p:'hold',ps:'held',pp:'held',cat:'Vowel-Shift'},
+    {p:'stand',ps:'stood',pp:'stood',cat:'Vowel-Shift'},
+    {p:'find',ps:'found',pp:'found',cat:'Vowel-Shift'},
+  ],
+  questionTypes:['yesno','choice','write'], knownCats:['Vowel-Shift'],
+},
+
+// ─── LEVEL 6: VOWEL-SHIFT AGAIN ───
+{
+  id:6, name:"VOWEL-SHIFT VERBS — AGAIN",
+  rule:"The vowel shifts once — then freezes.\nPast simple and past participle are always identical.\nNo -N, no -ED, no extra ending.",
+  examples:[['hang','hung','hung'],['stick','stuck','stuck'],['slide','slid','slid'],['stand','stood','stood']],
+  verbs:[
+    {p:'run',ps:'ran',pp:'run',cat:'Vowel-Shift'},
+    {p:'come',ps:'came',pp:'come',cat:'Vowel-Shift'},
+    {p:'become',ps:'became',pp:'become',cat:'Vowel-Shift'},
+    {p:'win',ps:'won',pp:'won',cat:'Vowel-Shift'},
+    {p:'dig',ps:'dug',pp:'dug',cat:'Vowel-Shift'},
+    {p:'hang',ps:'hung',pp:'hung',cat:'Vowel-Shift'},
+    {p:'stick',ps:'stuck',pp:'stuck',cat:'Vowel-Shift'},
+    {p:'strike',ps:'struck',pp:'struck',cat:'Vowel-Shift'},
+    {p:'slide',ps:'slid',pp:'slid',cat:'Vowel-Shift'},
+    {p:'hold',ps:'held',pp:'held',cat:'Vowel-Shift'},
+    {p:'stand',ps:'stood',pp:'stood',cat:'Vowel-Shift'},
+    {p:'find',ps:'found',pp:'found',cat:'Vowel-Shift'},
+    {p:'bind',ps:'bound',pp:'bound',cat:'Vowel-Shift'},
+    {p:'wind',ps:'wound',pp:'wound',cat:'Vowel-Shift'},
+    {p:'lead',ps:'led',pp:'led',cat:'Vowel-Shift'},
+    {p:'bleed',ps:'bled',pp:'bled',cat:'Vowel-Shift'},
+  ],
+  questionTypes:['yesno','choice','write','wrongright'], knownCats:['Vowel-Shift'],
+},
+
+// ─── LEVEL 7: A-E-U VERBS ───
+{
+  id:7, name:"A-E-U VERBS",
+  rule:"The vowel moves through three states.\nPresent, past simple, and past participle are all different.\nThey follow an a → e → u (or similar) vowel ladder.",
+  examples:[['sing','sang','sung'],['drink','drank','drunk'],['swim','swam','swum'],['ring','rang','rung']],
+  verbs:[
+    {p:'sing',ps:'sang',pp:'sung',cat:'A-E-U'},
+    {p:'ring',ps:'rang',pp:'rung',cat:'A-E-U'},
+    {p:'drink',ps:'drank',pp:'drunk',cat:'A-E-U'},
+    {p:'swim',ps:'swam',pp:'swum',cat:'A-E-U'},
+    {p:'begin',ps:'began',pp:'begun',cat:'A-E-U'},
+    {p:'sink',ps:'sank',pp:'sunk',cat:'A-E-U'},
+    {p:'shrink',ps:'shrank',pp:'shrunk',cat:'A-E-U'},
+    {p:'spin',ps:'spun',pp:'spun',cat:'A-E-U'},
+  ],
+  questionTypes:['yesno','choice','write'], knownCats:['A-E-U'],
+},
+
+// ─── LEVEL 8: A-E-U AGAIN ───
+{
+  id:8, name:"A-E-U VERBS — AGAIN",
+  rule:"The vowel moves through three states.\nPresent, past simple, and past participle are all different.\nThey follow an a → e → u (or similar) vowel ladder.",
+  examples:[['swim','swam','swum'],['shrink','shrank','shrunk'],['begin','began','begun'],['sink','sank','sunk']],
+  verbs:[
+    {p:'sing',ps:'sang',pp:'sung',cat:'A-E-U'},
+    {p:'ring',ps:'rang',pp:'rung',cat:'A-E-U'},
+    {p:'drink',ps:'drank',pp:'drunk',cat:'A-E-U'},
+    {p:'swim',ps:'swam',pp:'swum',cat:'A-E-U'},
+    {p:'begin',ps:'began',pp:'begun',cat:'A-E-U'},
+    {p:'sink',ps:'sank',pp:'sunk',cat:'A-E-U'},
+    {p:'shrink',ps:'shrank',pp:'shrunk',cat:'A-E-U'},
+    {p:'spin',ps:'spun',pp:'spun',cat:'A-E-U'},
+    {p:'cling',ps:'clung',pp:'clung',cat:'A-E-U'},
+    {p:'fling',ps:'flung',pp:'flung',cat:'A-E-U'},
+    {p:'swing',ps:'swung',pp:'swung',cat:'A-E-U'},
+    {p:'sting',ps:'stung',pp:'stung',cat:'A-E-U'},
+    {p:'win',ps:'won',pp:'won',cat:'A-E-U'},
+  ],
+  questionTypes:['yesno','choice','write','wrongright'], knownCats:['A-E-U'],
+},
+
+// ─── LEVEL 9: MIX REGULAR + SEMI-REGULAR + VOWEL-SHIFT + A-E-U ───
+{
+  id:9, name:"REGULAR + SEMI-REGULAR + VOWEL-SHIFT + A-E-U MIX",
+  rule:"Regular: adds -ED.\nSemi-regular: vowel shifts, adds -N.\nVowel-Shift: vowel shifts once, freezes.\nA-E-U: three vowel states.\nCan you tell them apart?",
+  examples:[['play','played','played'],['speak','spoke','spoken'],['run','ran','run'],['sing','sang','sung']],
   verbs:[
     {p:'like',ps:'liked',pp:'liked',cat:'Regular'},
     {p:'work',ps:'worked',pp:'worked',cat:'Regular'},
     {p:'play',ps:'played',pp:'played',cat:'Regular'},
-    {p:'talk',ps:'talked',pp:'talked',cat:'Regular'},
-    {p:'start',ps:'started',pp:'started',cat:'Regular'},
-    {p:'stop',ps:'stopped',pp:'stopped',cat:'Regular'},
     {p:'change',ps:'changed',pp:'changed',cat:'Regular'},
-    {p:'learn',ps:'learned',pp:'learned',cat:'Regular'},
     {p:'finish',ps:'finished',pp:'finished',cat:'Regular'},
     {p:'help',ps:'helped',pp:'helped',cat:'Regular'},
     {p:'try',ps:'tried',pp:'tried',cat:'Regular'},
-    {p:'use',ps:'used',pp:'used',cat:'Regular'},
     {p:'enjoy',ps:'enjoyed',pp:'enjoyed',cat:'Regular'},
-    {p:'decide',ps:'decided',pp:'decided',cat:'Regular'},
-    {p:'explain',ps:'explained',pp:'explained',cat:'Regular'},
     {p:'speak',ps:'spoke',pp:'spoken',cat:'Semi-Regular'},
     {p:'write',ps:'wrote',pp:'written',cat:'Semi-Regular'},
     {p:'grow',ps:'grew',pp:'grown',cat:'Semi-Regular'},
-    {p:'know',ps:'knew',pp:'known',cat:'Semi-Regular'},
-    {p:'drink',ps:'drank',pp:'drunk',cat:'Semi-Regular'},
     {p:'see',ps:'saw',pp:'seen',cat:'Semi-Regular'},
-    {p:'get',ps:'got',pp:'gotten',cat:'Semi-Regular'},
     {p:'give',ps:'gave',pp:'given',cat:'Semi-Regular'},
-    {p:'take',ps:'took',pp:'taken',cat:'Semi-Regular'},
-    {p:'run',ps:'ran',pp:'run',cat:'Semi-Regular'},
-    {p:'come',ps:'came',pp:'come',cat:'Semi-Regular'},
-    {p:'fall',ps:'fell',pp:'fallen',cat:'Semi-Regular'},
     {p:'break',ps:'broke',pp:'broken',cat:'Semi-Regular'},
-    {p:'forget',ps:'forgot',pp:'forgotten',cat:'Semi-Regular'},
-    {p:'throw',ps:'threw',pp:'thrown',cat:'Semi-Regular'},
+    {p:'take',ps:'took',pp:'taken',cat:'Semi-Regular'},
+    {p:'run',ps:'ran',pp:'run',cat:'Vowel-Shift'},
+    {p:'come',ps:'came',pp:'come',cat:'Vowel-Shift'},
+    {p:'dig',ps:'dug',pp:'dug',cat:'Vowel-Shift'},
+    {p:'stick',ps:'stuck',pp:'stuck',cat:'Vowel-Shift'},
+    {p:'find',ps:'found',pp:'found',cat:'Vowel-Shift'},
+    {p:'sing',ps:'sang',pp:'sung',cat:'A-E-U'},
+    {p:'drink',ps:'drank',pp:'drunk',cat:'A-E-U'},
+    {p:'swim',ps:'swam',pp:'swum',cat:'A-E-U'},
+    {p:'ring',ps:'rang',pp:'rung',cat:'A-E-U'},
+    {p:'begin',ps:'began',pp:'begun',cat:'A-E-U'},
   ],
-  questionTypes:['yesno','choice','write','wrongright'], knownCats:['Regular','Semi-Regular'],
+  questionTypes:['yesno','choice','write','wrongright'], knownCats:['Regular','Semi-Regular','Vowel-Shift','A-E-U'],
 },
 
-// ─── LEVEL 6: -OUGHT ───
+// ─── LEVEL 10: -OUGHT ───
 {
-  id:6, name:"-OUGHT VERBS",
+  id:10, name:"-OUGHT VERBS",
   rule:"The vowel was crushed centuries ago by sound pressure.\nThe -GHT is the ghost of a sound that no longer exists.\nPast simple and past participle are always identical.",
   examples:[['fight','fought','fought'],['think','thought','thought'],['buy','bought','bought'],['catch','caught','caught']],
   verbs:[
@@ -816,25 +859,15 @@ const LEVELS = [
     {p:'teach',ps:'taught',pp:'taught',cat:'-ought'},
     {p:'bring',ps:'brought',pp:'brought',cat:'-ought'},
     {p:'seek',ps:'sought',pp:'sought',cat:'-ought'},
-    {p:'shoot',ps:'shot',pp:'shot',cat:'Wanna-Be'},
-    {p:'burn',ps:'burnt',pp:'burnt',cat:'Wanna-Be'},
-    {p:'build',ps:'built',pp:'built',cat:'Wanna-Be'},
-    {p:'lose',ps:'lost',pp:'lost',cat:'Wanna-Be'},
-    {p:'leave',ps:'left',pp:'left',cat:'Wanna-Be'},
-    {p:'feel',ps:'felt',pp:'felt',cat:'Wanna-Be'},
-    {p:'keep',ps:'kept',pp:'kept',cat:'Wanna-Be'},
-    {p:'sleep',ps:'slept',pp:'slept',cat:'Wanna-Be'},
-    {p:'deal',ps:'dealt',pp:'dealt',cat:'Wanna-Be'},
-    {p:'mean',ps:'meant',pp:'meant',cat:'Wanna-Be'},
   ],
   questionTypes:['yesno','choice','write'], knownCats:['-ought'],
 },
 
-// ─── LEVEL 7: -OUGHT AGAIN ───
+// ─── LEVEL 11: -OUGHT AGAIN ───
 {
-  id:7, name:"-OUGHT VERBS — AGAIN",
+  id:11, name:"-OUGHT VERBS — AGAIN",
   rule:"The vowel was crushed centuries ago by sound pressure.\nThe -GHT is the ghost of a sound that no longer exists.\nPast simple and past participle are always identical.",
-  examples:[['teach','taught','taught'],['bring','brought','brought'],['shoot','shot','shot'],['lose','lost','lost']],
+  examples:[['teach','taught','taught'],['bring','brought','brought'],['seek','sought','sought'],['catch','caught','caught']],
   verbs:[
     {p:'fight',ps:'fought',pp:'fought',cat:'-ought'},
     {p:'think',ps:'thought',pp:'thought',cat:'-ought'},
@@ -843,63 +876,49 @@ const LEVELS = [
     {p:'teach',ps:'taught',pp:'taught',cat:'-ought'},
     {p:'bring',ps:'brought',pp:'brought',cat:'-ought'},
     {p:'seek',ps:'sought',pp:'sought',cat:'-ought'},
-    {p:'shoot',ps:'shot',pp:'shot',cat:'Wanna-Be'},
-    {p:'burn',ps:'burnt',pp:'burnt',cat:'Wanna-Be'},
-    {p:'build',ps:'built',pp:'built',cat:'Wanna-Be'},
-    {p:'lose',ps:'lost',pp:'lost',cat:'Wanna-Be'},
-    {p:'leave',ps:'left',pp:'left',cat:'Wanna-Be'},
-    {p:'feel',ps:'felt',pp:'felt',cat:'Wanna-Be'},
-    {p:'keep',ps:'kept',pp:'kept',cat:'Wanna-Be'},
-    {p:'sleep',ps:'slept',pp:'slept',cat:'Wanna-Be'},
-    {p:'deal',ps:'dealt',pp:'dealt',cat:'Wanna-Be'},
-    {p:'mean',ps:'meant',pp:'meant',cat:'Wanna-Be'},
   ],
   questionTypes:['yesno','choice','write','wrongright'], knownCats:['-ought'],
 },
 
-// ─── LEVEL 8: MIX REGULAR + SEMI-REGULAR + -OUGHT ───
+// ─── LEVEL 12: MIX REGULAR + SEMI-REGULAR + VOWEL-SHIFT + A-E-U + -OUGHT ───
 {
-  id:8, name:"REGULAR + SEMI-REGULAR + -OUGHT",
-  rule:"Three types together now.\nRegular: add -ED.\nSemi-regular: vowel shifts, adds -N.\n-Ought: vowel crushed, ends in -GHT.",
-  examples:[['walk','walked','walked'],['grow','grew','grown'],['think','thought','thought']],
+  id:12, name:"REGULAR + SEMI + VOWEL-SHIFT + A-E-U + -OUGHT",
+  rule:"Five types now.\nRegular: -ED.\nSemi-regular: vowel + -N.\nVowel-Shift: vowel freezes.\nA-E-U: three vowel states.\n-Ought: crushed vowel + -GHT.",
+  examples:[['walk','walked','walked'],['grow','grew','grown'],['run','ran','run'],['sing','sang','sung'],['think','thought','thought']],
   verbs:[
     {p:'work',ps:'worked',pp:'worked',cat:'Regular'},
     {p:'play',ps:'played',pp:'played',cat:'Regular'},
-    {p:'start',ps:'started',pp:'started',cat:'Regular'},
-    {p:'help',ps:'helped',pp:'helped',cat:'Regular'},
     {p:'change',ps:'changed',pp:'changed',cat:'Regular'},
     {p:'finish',ps:'finished',pp:'finished',cat:'Regular'},
-    {p:'learn',ps:'learned',pp:'learned',cat:'Regular'},
-    {p:'enjoy',ps:'enjoyed',pp:'enjoyed',cat:'Regular'},
-    {p:'decide',ps:'decided',pp:'decided',cat:'Regular'},
     {p:'try',ps:'tried',pp:'tried',cat:'Regular'},
     {p:'speak',ps:'spoke',pp:'spoken',cat:'Semi-Regular'},
-    {p:'write',ps:'wrote',pp:'written',cat:'Semi-Regular'},
     {p:'grow',ps:'grew',pp:'grown',cat:'Semi-Regular'},
     {p:'see',ps:'saw',pp:'seen',cat:'Semi-Regular'},
-    {p:'get',ps:'got',pp:'gotten',cat:'Semi-Regular'},
     {p:'give',ps:'gave',pp:'given',cat:'Semi-Regular'},
-    {p:'run',ps:'ran',pp:'run',cat:'Semi-Regular'},
-    {p:'come',ps:'came',pp:'come',cat:'Semi-Regular'},
     {p:'break',ps:'broke',pp:'broken',cat:'Semi-Regular'},
-    {p:'forget',ps:'forgot',pp:'forgotten',cat:'Semi-Regular'},
+    {p:'run',ps:'ran',pp:'run',cat:'Vowel-Shift'},
+    {p:'come',ps:'came',pp:'come',cat:'Vowel-Shift'},
+    {p:'dig',ps:'dug',pp:'dug',cat:'Vowel-Shift'},
+    {p:'stick',ps:'stuck',pp:'stuck',cat:'Vowel-Shift'},
+    {p:'find',ps:'found',pp:'found',cat:'Vowel-Shift'},
+    {p:'sing',ps:'sang',pp:'sung',cat:'A-E-U'},
+    {p:'drink',ps:'drank',pp:'drunk',cat:'A-E-U'},
+    {p:'swim',ps:'swam',pp:'swum',cat:'A-E-U'},
+    {p:'ring',ps:'rang',pp:'rung',cat:'A-E-U'},
+    {p:'begin',ps:'began',pp:'begun',cat:'A-E-U'},
     {p:'think',ps:'thought',pp:'thought',cat:'-ought'},
     {p:'buy',ps:'bought',pp:'bought',cat:'-ought'},
     {p:'catch',ps:'caught',pp:'caught',cat:'-ought'},
     {p:'teach',ps:'taught',pp:'taught',cat:'-ought'},
     {p:'bring',ps:'brought',pp:'brought',cat:'-ought'},
     {p:'fight',ps:'fought',pp:'fought',cat:'-ought'},
-    {p:'feel',ps:'felt',pp:'felt',cat:'Wanna-Be'},
-    {p:'keep',ps:'kept',pp:'kept',cat:'Wanna-Be'},
-    {p:'build',ps:'built',pp:'built',cat:'Wanna-Be'},
-    {p:'lose',ps:'lost',pp:'lost',cat:'Wanna-Be'},
   ],
-  questionTypes:['yesno','choice','write','wrongright'], knownCats:['Regular','Semi-Regular','-ought'],
+  questionTypes:['yesno','choice','write','wrongright'], knownCats:['Regular','Semi-Regular','Vowel-Shift','A-E-U','-ought'],
 },
 
-// ─── LEVEL 9: WANNA-BE REGULAR ───
+// ─── LEVEL 13: WANNA-BE REGULAR ───
 {
-  id:9, name:"WANNA-BE REGULARS",
+  id:13, name:"WANNA-BE REGULARS",
   rule:"These verbs tried to follow the rules — almost made it.\nSome trimmed -ED to -T.\nSome shifted the vowel slightly.\nread-read-read: spelling stays, pronunciation shifts.\nshow-showed-shown: past is regular, participle sneaks in a -N.",
   examples:[['make','made','made'],['show','showed','shown'],['read','read','read'],['find','found','found'],['say','said','said']],
   verbs:[
@@ -929,9 +948,7 @@ const LEVELS = [
     {p:'bend',ps:'bent',pp:'bent',cat:'Wanna-Be'},
     {p:'stand',ps:'stood',pp:'stood',cat:'Wanna-Be'},
     {p:'understand',ps:'understood',pp:'understood',cat:'Wanna-Be'},
-    {p:'bind',ps:'bound',pp:'bound',cat:'Wanna-Be'},
-    {p:'find',ps:'found',pp:'found',cat:'Wanna-Be'},
-    {p:'wind',ps:'wound',pp:'wound',cat:'Wanna-Be'},
+    {p:'lose',ps:'lost',pp:'lost',cat:'Wanna-Be'},
     {p:'deal',ps:'dealt',pp:'dealt',cat:'Wanna-Be'},
     {p:'dream',ps:'dreamt',pp:'dreamt',cat:'Wanna-Be'},
     {p:'mean',ps:'meant',pp:'meant',cat:'Wanna-Be'},
@@ -941,9 +958,9 @@ const LEVELS = [
   questionTypes:['yesno','choice','write'], knownCats:['Wanna-Be'],
 },
 
-// ─── LEVEL 10: WANNA-BE AGAIN ───
+// ─── LEVEL 14: WANNA-BE AGAIN ───
 {
-  id:10, name:"WANNA-BE REGULARS — AGAIN",
+  id:14, name:"WANNA-BE REGULARS — AGAIN",
   rule:"These verbs tried to follow the rules — almost made it.\nSome trimmed -ED to -T.\nSome shifted the vowel slightly.\nshow-showed-shown: past is regular, participle adds -N.",
   examples:[['hold','held','held'],['send','sent','sent'],['stand','stood','stood'],['dream','dreamt','dreamt']],
   verbs:[
@@ -959,31 +976,26 @@ const LEVELS = [
     {p:'sell',ps:'sold',pp:'sold',cat:'Wanna-Be'},
     {p:'pay',ps:'paid',pp:'paid',cat:'Wanna-Be'},
     {p:'lead',ps:'led',pp:'led',cat:'Wanna-Be'},
-    {p:'feed',ps:'fed',pp:'fed',cat:'Wanna-Be'},
     {p:'meet',ps:'met',pp:'met',cat:'Wanna-Be'},
+    {p:'feel',ps:'felt',pp:'felt',cat:'Wanna-Be'},
     {p:'keep',ps:'kept',pp:'kept',cat:'Wanna-Be'},
     {p:'sleep',ps:'slept',pp:'slept',cat:'Wanna-Be'},
     {p:'leave',ps:'left',pp:'left',cat:'Wanna-Be'},
     {p:'build',ps:'built',pp:'built',cat:'Wanna-Be'},
     {p:'send',ps:'sent',pp:'sent',cat:'Wanna-Be'},
     {p:'spend',ps:'spent',pp:'spent',cat:'Wanna-Be'},
-    {p:'lend',ps:'lent',pp:'lent',cat:'Wanna-Be'},
     {p:'stand',ps:'stood',pp:'stood',cat:'Wanna-Be'},
     {p:'understand',ps:'understood',pp:'understood',cat:'Wanna-Be'},
-    {p:'wind',ps:'wound',pp:'wound',cat:'Wanna-Be'},
+    {p:'lose',ps:'lost',pp:'lost',cat:'Wanna-Be'},
     {p:'deal',ps:'dealt',pp:'dealt',cat:'Wanna-Be'},
-    {p:'dream',ps:'dreamt',pp:'dreamt',cat:'Wanna-Be'},
     {p:'mean',ps:'meant',pp:'meant',cat:'Wanna-Be'},
-    {p:'learn',ps:'learnt',pp:'learnt',cat:'Wanna-Be'},
-    {p:'burn',ps:'burnt',pp:'burnt',cat:'Wanna-Be'},
-    {p:'bend',ps:'bent',pp:'bent',cat:'Wanna-Be'},
   ],
   questionTypes:['yesno','choice','write','wrongright'], knownCats:['Wanna-Be'],
 },
 
-// ─── LEVEL 11: MIX -OUGHT + WANNA-BE ───
+// ─── LEVEL 15: MIX -OUGHT + WANNA-BE ───
 {
-  id:11, name:"-OUGHT + WANNA-BE MIX",
+  id:15, name:"-OUGHT + WANNA-BE MIX",
   rule:"-Ought: vowel crushed, ends in -GHT or similar.\nWanna-Be: trimmed -ED to -T or shifted vowel.\nBoth types freeze the same in past and participle.",
   examples:[['fight','fought','fought'],['make','made','made'],['teach','taught','taught'],['leave','left','left']],
   verbs:[
@@ -993,122 +1005,73 @@ const LEVELS = [
     {p:'teach',ps:'taught',pp:'taught',cat:'-ought'},
     {p:'bring',ps:'brought',pp:'brought',cat:'-ought'},
     {p:'fight',ps:'fought',pp:'fought',cat:'-ought'},
-    {p:'shoot',ps:'shot',pp:'shot',cat:'Wanna-Be'},
     {p:'seek',ps:'sought',pp:'sought',cat:'-ought'},
-    {p:'burn',ps:'burnt',pp:'burnt',cat:'Wanna-Be'},
-    {p:'lose',ps:'lost',pp:'lost',cat:'Wanna-Be'},
-    {p:'make',ps:'made',pp:'made',cat:'Wanna-Be'},
-    {p:'show',ps:'showed',pp:'shown',cat:'Wanna-Be'},
-    {p:'say',ps:'said',pp:'said',cat:'Wanna-Be'},
-    {p:'have',ps:'had',pp:'had',cat:'Wanna-Be'},
-    {p:'find',ps:'found',pp:'found',cat:'Wanna-Be'},
-    {p:'hold',ps:'held',pp:'held',cat:'Wanna-Be'},
-    {p:'tell',ps:'told',pp:'told',cat:'Wanna-Be'},
-    {p:'pay',ps:'paid',pp:'paid',cat:'Wanna-Be'},
-    {p:'lead',ps:'led',pp:'led',cat:'Wanna-Be'},
-    {p:'leave',ps:'left',pp:'left',cat:'Wanna-Be'},
-    {p:'send',ps:'sent',pp:'sent',cat:'Wanna-Be'},
-    {p:'build',ps:'built',pp:'built',cat:'Wanna-Be'},
-    {p:'keep',ps:'kept',pp:'kept',cat:'Wanna-Be'},
     {p:'feel',ps:'felt',pp:'felt',cat:'Wanna-Be'},
-    {p:'stand',ps:'stood',pp:'stood',cat:'Wanna-Be'},
-    {p:'mean',ps:'meant',pp:'meant',cat:'Wanna-Be'},
-    {p:'deal',ps:'dealt',pp:'dealt',cat:'Wanna-Be'},
-    {p:'sleep',ps:'slept',pp:'slept',cat:'Wanna-Be'},
-    {p:'spend',ps:'spent',pp:'spent',cat:'Wanna-Be'},
+    {p:'keep',ps:'kept',pp:'kept',cat:'Wanna-Be'},
+    {p:'build',ps:'built',pp:'built',cat:'Wanna-Be'},
+    {p:'lose',ps:'lost',pp:'lost',cat:'Wanna-Be'},
+    {p:'leave',ps:'left',pp:'left',cat:'Wanna-Be'},
+    {p:'make',ps:'made',pp:'made',cat:'Wanna-Be'},
+    {p:'say',ps:'said',pp:'said',cat:'Wanna-Be'},
+    {p:'find',ps:'found',pp:'found',cat:'Wanna-Be'},
+    {p:'tell',ps:'told',pp:'told',cat:'Wanna-Be'},
+    {p:'have',ps:'had',pp:'had',cat:'Wanna-Be'},
+    {p:'show',ps:'showed',pp:'shown',cat:'Wanna-Be'},
     {p:'read',ps:'read',pp:'read',cat:'Wanna-Be'},
+    {p:'stand',ps:'stood',pp:'stood',cat:'Wanna-Be'},
+    {p:'send',ps:'sent',pp:'sent',cat:'Wanna-Be'},
+    {p:'pay',ps:'paid',pp:'paid',cat:'Wanna-Be'},
   ],
   questionTypes:['yesno','choice','write','wrongright'], knownCats:['-ought','Wanna-Be'],
 },
 
-// ─── LEVEL 12: MIX REGULAR + SEMI-REGULAR ───
+// ─── LEVEL 16: BIG MIX ───
 {
-  id:12, name:"REGULAR + SEMI-REGULAR MIX",
-  rule:"Regular: add -ED or -D, both forms identical.\nSemi-regular: vowel shifts, participle adds -N or -EN.\nKeep them straight!",
-  examples:[['try','tried','tried'],['know','knew','known'],['visit','visited','visited'],['fall','fell','fallen']],
-  verbs:[
-    {p:'explain',ps:'explained',pp:'explained',cat:'Regular'},
-    {p:'create',ps:'created',pp:'created',cat:'Regular'},
-    {p:'develop',ps:'developed',pp:'developed',cat:'Regular'},
-    {p:'consider',ps:'considered',pp:'considered',cat:'Regular'},
-    {p:'include',ps:'included',pp:'included',cat:'Regular'},
-    {p:'improve',ps:'improved',pp:'improved',cat:'Regular'},
-    {p:'suggest',ps:'suggested',pp:'suggested',cat:'Regular'},
-    {p:'allow',ps:'allowed',pp:'allowed',cat:'Regular'},
-    {p:'remain',ps:'remained',pp:'remained',cat:'Regular'},
-    {p:'appear',ps:'appeared',pp:'appeared',cat:'Regular'},
-    {p:'prepare',ps:'prepared',pp:'prepared',cat:'Regular'},
-    {p:'protect',ps:'protected',pp:'protected',cat:'Regular'},
-    {p:'report',ps:'reported',pp:'reported',cat:'Regular'},
-    {p:'respond',ps:'responded',pp:'responded',cat:'Regular'},
-    {p:'collect',ps:'collected',pp:'collected',cat:'Regular'},
-    {p:'know',ps:'knew',pp:'known',cat:'Semi-Regular'},
-    {p:'fly',ps:'flew',pp:'flown',cat:'Semi-Regular'},
-    {p:'fall',ps:'fell',pp:'fallen',cat:'Semi-Regular'},
-    {p:'eat',ps:'ate',pp:'eaten',cat:'Semi-Regular'},
-    {p:'take',ps:'took',pp:'taken',cat:'Semi-Regular'},
-    {p:'wake',ps:'woke',pp:'woken',cat:'Semi-Regular'},
-    {p:'steal',ps:'stole',pp:'stolen',cat:'Semi-Regular'},
-    {p:'shake',ps:'shook',pp:'shaken',cat:'Semi-Regular'},
-    {p:'ride',ps:'rode',pp:'ridden',cat:'Semi-Regular'},
-    {p:'drive',ps:'drove',pp:'driven',cat:'Semi-Regular'},
-    {p:'bite',ps:'bit',pp:'bitten',cat:'Semi-Regular'},
-    {p:'rise',ps:'rose',pp:'risen',cat:'Semi-Regular'},
-    {p:'wear',ps:'wore',pp:'worn',cat:'Semi-Regular'},
-    {p:'draw',ps:'drew',pp:'drawn',cat:'Semi-Regular'},
-    {p:'blow',ps:'blew',pp:'blown',cat:'Semi-Regular'},
-  ],
-  questionTypes:['yesno','choice','write','wrongright'], knownCats:['Regular','Semi-Regular'],
-},
-
-// ─── LEVEL 13: MIX REG + SEMI + -OUGHT + WANNA-BE ───
-{
-  id:13, name:"REGULAR + SEMI + -OUGHT + WANNA-BE",
-  rule:"Four types in the mix.\nRegular: -ED. Semi: vowel + -N.\n-Ought: crushed vowel + -GHT.\nWanna-Be: close, but not quite regular.",
-  examples:[['work','worked','worked'],['speak','spoke','spoken'],['think','thought','thought'],['find','found','found']],
+  id:16, name:"REGULAR + SEMI + VOWEL-SHIFT + A-E-U + -OUGHT + WANNA-BE",
+  rule:"Six types in the mix.\nRegular: -ED. Semi: vowel + -N.\nVowel-Shift: vowel only.\n-Ought: crushed vowel + -GHT.\nWanna-Be: close, but not quite regular.",
+  examples:[['work','worked','worked'],['speak','spoke','spoken'],['run','ran','run'],['think','thought','thought'],['find','found','found']],
   verbs:[
     {p:'work',ps:'worked',pp:'worked',cat:'Regular'},
-    {p:'play',ps:'played',pp:'played',cat:'Regular'},
     {p:'change',ps:'changed',pp:'changed',cat:'Regular'},
     {p:'finish',ps:'finished',pp:'finished',cat:'Regular'},
-    {p:'help',ps:'helped',pp:'helped',cat:'Regular'},
-    {p:'enjoy',ps:'enjoyed',pp:'enjoyed',cat:'Regular'},
-    {p:'decide',ps:'decided',pp:'decided',cat:'Regular'},
     {p:'learn',ps:'learned',pp:'learned',cat:'Regular'},
+    {p:'enjoy',ps:'enjoyed',pp:'enjoyed',cat:'Regular'},
     {p:'speak',ps:'spoke',pp:'spoken',cat:'Semi-Regular'},
     {p:'write',ps:'wrote',pp:'written',cat:'Semi-Regular'},
+    {p:'grow',ps:'grew',pp:'grown',cat:'Semi-Regular'},
     {p:'see',ps:'saw',pp:'seen',cat:'Semi-Regular'},
     {p:'give',ps:'gave',pp:'given',cat:'Semi-Regular'},
-    {p:'run',ps:'ran',pp:'run',cat:'Semi-Regular'},
-    {p:'come',ps:'came',pp:'come',cat:'Semi-Regular'},
-    {p:'grow',ps:'grew',pp:'grown',cat:'Semi-Regular'},
     {p:'break',ps:'broke',pp:'broken',cat:'Semi-Regular'},
+    {p:'forget',ps:'forgot',pp:'forgotten',cat:'Semi-Regular'},
+    {p:'run',ps:'ran',pp:'run',cat:'Vowel-Shift'},
+    {p:'come',ps:'came',pp:'come',cat:'Vowel-Shift'},
+    {p:'dig',ps:'dug',pp:'dug',cat:'Vowel-Shift'},
+    {p:'win',ps:'won',pp:'won',cat:'Vowel-Shift'},
+    {p:'drink',ps:'drank',pp:'drunk',cat:'A-E-U'},
+    {p:'swim',ps:'swam',pp:'swum',cat:'A-E-U'},
     {p:'think',ps:'thought',pp:'thought',cat:'-ought'},
-    {p:'buy',ps:'bought',pp:'bought',cat:'-ought'},
     {p:'bring',ps:'brought',pp:'brought',cat:'-ought'},
     {p:'teach',ps:'taught',pp:'taught',cat:'-ought'},
     {p:'catch',ps:'caught',pp:'caught',cat:'-ought'},
     {p:'fight',ps:'fought',pp:'fought',cat:'-ought'},
     {p:'lose',ps:'lost',pp:'lost',cat:'Wanna-Be'},
-    {p:'keep',ps:'kept',pp:'kept',cat:'Wanna-Be'},
     {p:'make',ps:'made',pp:'made',cat:'Wanna-Be'},
     {p:'say',ps:'said',pp:'said',cat:'Wanna-Be'},
     {p:'find',ps:'found',pp:'found',cat:'Wanna-Be'},
-    {p:'tell',ps:'told',pp:'told',cat:'Wanna-Be'},
     {p:'have',ps:'had',pp:'had',cat:'Wanna-Be'},
+    {p:'tell',ps:'told',pp:'told',cat:'Wanna-Be'},
     {p:'show',ps:'showed',pp:'shown',cat:'Wanna-Be'},
-    {p:'read',ps:'read',pp:'read',cat:'Wanna-Be'},
     {p:'leave',ps:'left',pp:'left',cat:'Wanna-Be'},
     {p:'stand',ps:'stood',pp:'stood',cat:'Wanna-Be'},
     {p:'send',ps:'sent',pp:'sent',cat:'Wanna-Be'},
-    {p:'pay',ps:'paid',pp:'paid',cat:'Wanna-Be'},
+    {p:'read',ps:'read',pp:'read',cat:'Wanna-Be'},
   ],
-  questionTypes:['yesno','choice','write','wrongright'], knownCats:['Regular','Semi-Regular','-ought','Wanna-Be'],
+  questionTypes:['yesno','choice','write','wrongright'], knownCats:['Regular','Semi-Regular','Vowel-Shift','A-E-U','-ought','Wanna-Be'],
 },
 
-// ─── LEVEL 14: REPEATERS ───
+// ─── LEVEL 17: REPEATERS ───
 {
-  id:14, name:"REPEATERS",
+  id:17, name:"REPEATERS",
   rule:"These verbs never change at all.\nPresent, past simple, and past participle are identical.\nThey were strong verbs whose vowel happened not to shift.",
   examples:[['hit','hit','hit'],['cut','cut','cut'],['put','put','put'],['let','let','let']],
   verbs:[
@@ -1129,9 +1092,9 @@ const LEVELS = [
   questionTypes:['yesno','choice','write'], knownCats:['Repeater'],
 },
 
-// ─── LEVEL 15: REPEATERS AGAIN ───
+// ─── LEVEL 18: REPEATERS AGAIN ───
 {
-  id:15, name:"REPEATERS — AGAIN",
+  id:18, name:"REPEATERS — AGAIN",
   rule:"These verbs never change at all.\nPresent, past simple, and past participle are identical.\nThey were strong verbs whose vowel happened not to shift.",
   examples:[['set','set','set'],['hurt','hurt','hurt'],['cost','cost','cost'],['spread','spread','spread']],
   verbs:[
@@ -1152,11 +1115,11 @@ const LEVELS = [
   questionTypes:['yesno','choice','write','wrongright'], knownCats:['Repeater'],
 },
 
-// ─── LEVEL 16: MIX ALL EXCEPT IRREGULARS ───
+// ─── LEVEL 19: ALL EXCEPT IRREGULARS ───
 {
-  id:16, name:"REPEATERS + ALL PREVIOUS",
-  rule:"All five types: Regular, Semi-Regular, -Ought, Wanna-Be, Repeater.\nEach one plays by slightly different rules.\nStay sharp.",
-  examples:[['work','worked','worked'],['speak','spoke','spoken'],['think','thought','thought'],['find','found','found'],['hit','hit','hit']],
+  id:19, name:"ALL TYPES — NO IRREGULARS",
+  rule:"All seven types: Regular, Semi-Regular, Vowel-Shift, A-E-U, -Ought, Wanna-Be, Repeater.\nEach one plays by slightly different rules.\nStay sharp.",
+  examples:[['work','worked','worked'],['speak','spoke','spoken'],['run','ran','run'],['think','thought','thought'],['find','found','found'],['hit','hit','hit']],
   verbs:[
     {p:'work',ps:'worked',pp:'worked',cat:'Regular'},
     {p:'change',ps:'changed',pp:'changed',cat:'Regular'},
@@ -1167,9 +1130,14 @@ const LEVELS = [
     {p:'write',ps:'wrote',pp:'written',cat:'Semi-Regular'},
     {p:'grow',ps:'grew',pp:'grown',cat:'Semi-Regular'},
     {p:'see',ps:'saw',pp:'seen',cat:'Semi-Regular'},
-    {p:'run',ps:'ran',pp:'run',cat:'Semi-Regular'},
-    {p:'come',ps:'came',pp:'come',cat:'Semi-Regular'},
     {p:'give',ps:'gave',pp:'given',cat:'Semi-Regular'},
+    {p:'break',ps:'broke',pp:'broken',cat:'Semi-Regular'},
+    {p:'run',ps:'ran',pp:'run',cat:'Vowel-Shift'},
+    {p:'come',ps:'came',pp:'come',cat:'Vowel-Shift'},
+    {p:'win',ps:'won',pp:'won',cat:'Vowel-Shift'},
+    {p:'dig',ps:'dug',pp:'dug',cat:'Vowel-Shift'},
+    {p:'drink',ps:'drank',pp:'drunk',cat:'A-E-U'},
+    {p:'swim',ps:'swam',pp:'swum',cat:'A-E-U'},
     {p:'think',ps:'thought',pp:'thought',cat:'-ought'},
     {p:'bring',ps:'brought',pp:'brought',cat:'-ought'},
     {p:'teach',ps:'taught',pp:'taught',cat:'-ought'},
@@ -1197,12 +1165,12 @@ const LEVELS = [
     {p:'shut',ps:'shut',pp:'shut',cat:'Repeater'},
     {p:'split',ps:'split',pp:'split',cat:'Repeater'},
   ],
-  questionTypes:['yesno','choice','write','wrongright'], knownCats:['Regular','Semi-Regular','-ought','Wanna-Be','Repeater'],
+  questionTypes:['yesno','choice','write','wrongright'], knownCats:['Regular','Semi-Regular','Vowel-Shift','A-E-U','-ought','Wanna-Be','Repeater'],
 },
 
-// ─── LEVEL 17: TRUE IRREGULARS ───
+// ─── LEVEL 20: TRUE IRREGULARS ───
 {
-  id:17, name:"TRUE IRREGULARS",
+  id:20, name:"TRUE IRREGULARS",
   rule:"Not just irregular — built from different historical verbs.\n'went' came from 'to wend', a completely different verb.\n'be' is assembled from three separate ancient roots.\nThese are ruins of older systems, still standing.",
   examples:[['go','went','gone'],['be / is / are','was / were','been'],['do','did','done']],
   verbs:[
@@ -1213,9 +1181,9 @@ const LEVELS = [
   questionTypes:['yesno','choice','write'], knownCats:['Irregular'],
 },
 
-// ─── LEVEL 18: TRUE IRREGULARS AGAIN ───
+// ─── LEVEL 21: TRUE IRREGULARS AGAIN ───
 {
-  id:18, name:"TRUE IRREGULARS — AGAIN",
+  id:21, name:"TRUE IRREGULARS — AGAIN",
   rule:"Not just irregular — built from different historical verbs.\n'went' came from 'to wend', a completely different verb.\n'be' is assembled from three separate ancient roots.\nThese are ruins of older systems, still standing.",
   examples:[['go','went','gone'],['be / is / are','was / were','been'],['do','did','done']],
   verbs:[
@@ -1226,11 +1194,11 @@ const LEVELS = [
   questionTypes:['yesno','choice','write','wrongright'], knownCats:['Irregular'],
 },
 
-// ─── LEVEL 19+: ALL TYPES ───
+// ─── LEVEL 22: ALL TYPES ───
 {
-  id:19, name:"ALL TYPES",
-  rule:"Every verb type in one arena.\nRegular, Semi-Regular, -Ought, Wanna-Be, Repeater, True Irregular.\nNo hints. No mercy.",
-  examples:[['work','worked','worked'],['speak','spoke','spoken'],['fight','fought','fought'],['find','found','found'],['hit','hit','hit'],['go','went','gone']],
+  id:22, name:"ALL TYPES",
+  rule:"Every verb type in one arena.\nRegular, Semi-Regular, Vowel-Shift, A-E-U, -Ought, Wanna-Be, Repeater, True Irregular.\nNo hints. No mercy.",
+  examples:[['work','worked','worked'],['speak','spoke','spoken'],['run','ran','run'],['fight','fought','fought'],['find','found','found'],['hit','hit','hit'],['go','went','gone']],
   verbs:[
     {p:'go',ps:'went',pp:'gone',cat:'Irregular'},
     {p:'be',ps:'was/were',pp:'been',cat:'Irregular'},
@@ -1250,13 +1218,19 @@ const LEVELS = [
     {p:'grow',ps:'grew',pp:'grown',cat:'Semi-Regular'},
     {p:'see',ps:'saw',pp:'seen',cat:'Semi-Regular'},
     {p:'give',ps:'gave',pp:'given',cat:'Semi-Regular'},
-    {p:'run',ps:'ran',pp:'run',cat:'Semi-Regular'},
-    {p:'come',ps:'came',pp:'come',cat:'Semi-Regular'},
     {p:'break',ps:'broke',pp:'broken',cat:'Semi-Regular'},
     {p:'fall',ps:'fell',pp:'fallen',cat:'Semi-Regular'},
     {p:'take',ps:'took',pp:'taken',cat:'Semi-Regular'},
     {p:'know',ps:'knew',pp:'known',cat:'Semi-Regular'},
     {p:'fly',ps:'flew',pp:'flown',cat:'Semi-Regular'},
+    {p:'run',ps:'ran',pp:'run',cat:'Vowel-Shift'},
+    {p:'come',ps:'came',pp:'come',cat:'Vowel-Shift'},
+    {p:'win',ps:'won',pp:'won',cat:'Vowel-Shift'},
+    {p:'dig',ps:'dug',pp:'dug',cat:'Vowel-Shift'},
+    {p:'drink',ps:'drank',pp:'drunk',cat:'A-E-U'},
+    {p:'swim',ps:'swam',pp:'swum',cat:'A-E-U'},
+    {p:'sing',ps:'sang',pp:'sung',cat:'A-E-U'},
+    {p:'ring',ps:'rang',pp:'rung',cat:'A-E-U'},
     {p:'think',ps:'thought',pp:'thought',cat:'-ought'},
     {p:'buy',ps:'bought',pp:'bought',cat:'-ought'},
     {p:'bring',ps:'brought',pp:'brought',cat:'-ought'},
@@ -1291,7 +1265,7 @@ const LEVELS = [
     {p:'shut',ps:'shut',pp:'shut',cat:'Repeater'},
     {p:'split',ps:'split',pp:'split',cat:'Repeater'},
   ],
-  questionTypes:['yesno','choice','write','wrongright'], knownCats:['Regular','Semi-Regular','-ought','Wanna-Be','Repeater','Irregular'],
+  questionTypes:['yesno','choice','write','wrongright'], knownCats:['Regular','Semi-Regular','Vowel-Shift','A-E-U','-ought','Wanna-Be','Repeater','Irregular'],
 },
 ];
 
@@ -1534,8 +1508,14 @@ function prog() { return Math.min(1, meters / 3000); }
 const LANE_GAP_MIN = 55;
 const LANE_GAP_MAX = 95;
 
+function isFreeFlight() { return LEVELS[curLevel].noVerbs; }
+
 function trySpawnLane() {
-  const gap = LANE_GAP_MIN + Math.random() * (LANE_GAP_MAX - LANE_GAP_MIN);
+  const ff = isFreeFlight();
+  // Free flight: 15% tighter gaps = more obstacles, less room to breathe
+  const gapMin = ff ? LANE_GAP_MIN * 0.85 : LANE_GAP_MIN;
+  const gapMax = ff ? LANE_GAP_MAX * 0.85 : LANE_GAP_MAX;
+  const gap = gapMin + Math.random() * (gapMax - gapMin);
   spawnWorldY -= gap;
 
   // Always spawn something — weight shifts with progress
@@ -1576,7 +1556,7 @@ function trySpawnLane() {
   } else if (type === 'rival') {
     // Rival ship crosses horizontally
     const goRight = Math.random() < 0.5;
-    const spd = 3.5 + prog() * 4.5;
+    const spd = (3.5 + prog() * 4.5) * (isFreeFlight() ? 1.15 : 1);
     lane.data = {
       x: goRight ? -40 : GW + 40,
       spd: goRight ? spd : -spd,
@@ -1622,7 +1602,7 @@ function update() {
     if (s.y > GH) { s.y = 0; s.x = Math.random() * GW; }
   }
 
-  const speed = hyperspeed ? SCROLL_SPEED * 3.5 : SCROLL_SPEED;
+  const speed = hyperspeed ? SCROLL_SPEED * 3.5 : (SCROLL_SPEED * (isFreeFlight() ? 1.15 : 1));
   scrollY += speed;
   meters += hyperspeed ? 4 : 1;
 
@@ -2126,7 +2106,7 @@ function showTitleCard(ctx) {
     ['PRESENT','PAST','PARTICIPLE'].forEach(h => {
       const th = document.createElement('th');
       th.textContent = h;
-      th.style.cssText = 'background:#2a3278;color:#00cfff;font-family:Courier New,monospace;font-size:clamp(8px,2vw,10px);padding:5px 6px;border:1px solid #2a3278;text-align:center;letter-spacing:1px;';
+      th.style.cssText = 'background:#2a3278;color:#00cfff;font-family:Courier New,monospace;font-size:clamp(11px,3vw,14px);padding:8px 10px;border:1px solid #2a3278;text-align:center;letter-spacing:1px;';
       thead.appendChild(th);
     });
     tbl.appendChild(thead);
@@ -2135,7 +2115,7 @@ function showTitleCard(ctx) {
       [p,ps,pp].forEach(v => {
         const td = document.createElement('td');
         td.textContent = v;
-        td.style.cssText = 'border:1px solid #2a3278;padding:3px 5px;font-family:Courier New,monospace;font-size:clamp(8px,2vw,10px);text-align:center;background:#101540;color:#ffe600;';
+        td.style.cssText = 'border:1px solid #2a3278;padding:8px 10px;font-family:Courier New,monospace;font-size:clamp(11px,3vw,14px);text-align:center;background:#101540;color:#ffe600;';
         tr.appendChild(td);
       });
       tbl.appendChild(tr);
@@ -2209,18 +2189,48 @@ function showQuestion(ctx) {
   buildQ(type, verb, lv);
 }
 
+// ── Category pattern hints (shown mid-question instead of category name) ──
+const CAT_PATTERN = {
+  'Regular':      'adds -ED / -D',
+  'Semi-Regular': 'vowel shifts, adds -N',
+  'Vowel-Shift':  'vowel shifts, past = participle',
+  'A-E-U':        'three vowel states: a → e → u',
+  '-ought':       'vowel crushed → -OUGHT',
+  'Wanna-Be':     'almost regular, close but no -ED',
+  'Repeater':     'never changes',
+  'Irregular':    'completely unique',
+};
+
+// ── One iconic anchor verb per category (used in the pattern-match question) ──
+const CAT_ANCHOR = {
+  'Regular':      {p:'work',  ps:'worked',   pp:'worked'},
+  'Semi-Regular': {p:'speak', ps:'spoke',    pp:'spoken'},
+  'Vowel-Shift':  {p:'run',   ps:'ran',      pp:'run'},
+  'A-E-U':        {p:'sing',  ps:'sang',     pp:'sung'},
+  '-ought':       {p:'think', ps:'thought',  pp:'thought'},
+  'Wanna-Be':     {p:'find',  ps:'found',    pp:'found'},
+  'Repeater':     {p:'hit',   ps:'hit',      pp:'hit'},
+  'Irregular':    {p:'go',    ps:'went',     pp:'gone'},
+};
+
 function buildQ(type, verb, lv) {
   const body = document.getElementById('qbody');
   body.innerHTML = '';
   document.getElementById('qtext').textContent = '';
 
   if (type === 'yesno') {
-    const cat = lv.knownCats[Math.floor(Math.random()*lv.knownCats.length)];
-    const isYes = verb.cat === cat;
-    document.getElementById('qtype').textContent = 'CATEGORY CHECK';
-    document.getElementById('qtext').textContent = `Is "${verb.p}" a ${cat} verb?`;
+    const otherCats = lv.knownCats.filter(c => c !== verb.cat);
+    const distractorCat = otherCats.length > 0
+      ? otherCats[Math.floor(Math.random() * otherCats.length)]
+      : lv.knownCats[0];
+    const showCorrect = Math.random() > 0.5;
+    const anchorCat = showCorrect ? verb.cat : distractorCat;
+    const anchor = CAT_ANCHOR[anchorCat];
+
+    document.getElementById('qtype').textContent = 'PATTERN MATCH';
+    document.getElementById('qtext').textContent = `Does "${verb.p}" follow the same pattern as "${anchor.p}"?`;
     document.getElementById('qverb').style.display = 'block';
-    document.getElementById('qverb').textContent = `${verb.p} · ${verb.ps} · ${verb.pp}`;
+    document.getElementById('qverb').textContent = `${anchor.p} · ${anchor.ps} · ${anchor.pp}`;
 
     const wrap = document.createElement('div');
     wrap.className = 'choices';
@@ -2229,7 +2239,7 @@ function buildQ(type, verb, lv) {
       btn.className = 'cbtn';
       btn.innerHTML = `<span class="ckey">${['A','B'][i]}</span>${c}`;
       btn.addEventListener('click', () => {
-        const correct = isYes ? 'Yes' : 'No';
+        const correct = showCorrect ? 'Yes' : 'No';
         handleChoice(btn, wrap, c, correct);
       });
       wrap.appendChild(btn);
@@ -2240,7 +2250,7 @@ function buildQ(type, verb, lv) {
     const askPP = studyMode === 'pp' || (studyMode === 'both' && Math.random() > 0.5 && verb.ps !== verb.pp);
     const correct = askPP ? verb.pp : verb.ps;
     const label = askPP ? 'past participle' : 'past simple';
-    document.getElementById('qtype').textContent = `CHOOSE THE FORM · ${verb.cat}`;
+    document.getElementById('qtype').textContent = `CHOOSE THE FORM · ${CAT_PATTERN[verb.cat] || verb.cat}`;
     document.getElementById('qtext').innerHTML = `"${verb.p}" — what is the ${label}?`;
 
     const opts = shuffle([correct, ...wrongForms(verb.p, correct, lv).slice(0,3)]);
@@ -2259,7 +2269,7 @@ function buildQ(type, verb, lv) {
     const askPP = studyMode === 'pp' || (studyMode === 'both' && Math.random() > 0.5 && verb.ps !== verb.pp);
     const correct = askPP ? verb.pp : verb.ps;
     const label = askPP ? 'past participle' : 'past simple';
-    document.getElementById('qtype').textContent = `WRITE THE FORM · ${verb.cat}`;
+    document.getElementById('qtype').textContent = `WRITE THE FORM · ${CAT_PATTERN[verb.cat] || verb.cat}`;
     document.getElementById('qtext').innerHTML = `Write the ${label} of "${verb.p}":`;
 
     const inp = document.createElement('input');
@@ -2297,7 +2307,7 @@ function buildQ(type, verb, lv) {
     const label = askPP ? 'past participle' : 'past simple';
     const isCorrect = Math.random() > 0.5;
     const shownForm = isCorrect ? correctForm : wrongForms(verb.p, correctForm, lv)[0] || correctForm + 'ed';
-    document.getElementById('qtype').textContent = `CORRECT OR WRONG? · ${verb.cat}`;
+    document.getElementById('qtype').textContent = `CORRECT OR WRONG? · ${CAT_PATTERN[verb.cat] || verb.cat}`;
     document.getElementById('qtext').innerHTML = `Is this the right ${label} of "${verb.p}"?`;
     document.getElementById('qverb').style.display = 'block';
     document.getElementById('qverb').textContent = shownForm;
