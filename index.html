@@ -2403,6 +2403,7 @@ function buildQ(type, verb, lv) {
     options.forEach((opt, i) => {
       const btn = document.createElement('button');
       btn.className = 'cbtn';
+      btn.dataset.val = opt.label;
       btn.innerHTML = `<span class="ckey">${['A','B'][i]}</span>${opt.label}`;
       btn.addEventListener('click', () => {
         handleChoice(btn, wrap, opt.label, options.find(o => o.correct).label);
@@ -2424,6 +2425,7 @@ function buildQ(type, verb, lv) {
     opts.forEach((o, i) => {
       const btn = document.createElement('button');
       btn.className = 'cbtn';
+      btn.dataset.val = o;
       btn.innerHTML = `<span class="ckey">${['A','B','C','D'][i]}</span>${o}`;
       btn.addEventListener('click', () => handleChoice(btn, wrap, o, correct));
       wrap.appendChild(btn);
@@ -2482,6 +2484,7 @@ function buildQ(type, verb, lv) {
     ['✓  Correct','✗  Wrong'].forEach((label2, i) => {
       const btn2 = document.createElement('button');
       btn2.className = 'cbtn';
+      btn2.dataset.val = i === 0 ? 'correct' : 'wrong';
       btn2.innerHTML = `<span class="ckey">${['A','B'][i]}</span>${label2}`;
       btn2.addEventListener('click', () => {
         const chosen = i === 0 ? 'correct' : 'wrong';
@@ -2511,7 +2514,7 @@ function handleChoice(btn, wrap, chosen, correct) {
   btn.classList.add(won ? 'correct' : 'wrong');
   if (!won) {
     all.forEach(b => {
-      if (b.textContent.replace(/^[A-D]/, '').trim() === correct) b.classList.add('correct');
+      if (b.dataset.val === correct) b.classList.add('correct');
     });
   }
   resolveQ(won, won ? null : correct);
